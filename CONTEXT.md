@@ -1,6 +1,6 @@
 # Projekt-Kontext: Keyy
 
-_Zuletzt aktualisiert: 2026-09-11_
+_Zuletzt aktualisiert: 2026-09-12_
 
 Diese Datei ist für den Einstieg in eine neue Sitzung gedacht. Sie wiederholt
 **nicht**, was im `README.md` steht — dort stehen Verfahren, Bauanleitung und
@@ -143,7 +143,9 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
   `edm`. Das Profil gehört zu genau diesen Einstellungen — wer sie ändert,
   muss es neu lernen (Mittel der Chroma-Spalten aus `--csv`, gedreht auf
   den beschrifteten Grundton).
-* Git: lokal initialisiert, noch kein Commit, kein GitHub-Remote.
+* Git: lokal initialisiert, Branch `main`, erster Commit `78887a8`
+  („Keyy 0.1.0“). **Kein GitHub-Remote** — falls gewünscht, muss das Repo
+  dort noch angelegt werden.
 
 ## Offene Punkte / Nächste Schritte
 
@@ -179,6 +181,48 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
       (dunkel `#121212`, Akzent `#3B8ED0`).
 
 ---
+
+## Technische Details
+
+### Bauen (so lief es auf dem Rechner des Nutzers)
+
+```bat
+cmake -B build-dsp -DKEYY_BUILD_PLUGIN=OFF -DFETCHCONTENT_SOURCE_DIR_CATCH2=../Voxx/build/_deps/catch2-src
+cmake --build build-dsp --config Release
+build-dsp\Release\keyy-tests.exe
+
+cmake -B build -DKEYY_BUILD_TESTS=OFF -DKEYY_BUILD_CLI=OFF -DKEYY_COPY_PLUGIN=OFF -DFETCHCONTENT_SOURCE_DIR_JUCE=../Voxx/build/_deps/juce-src
+cmake --build build --config Release
+```
+
+Die beiden `FETCHCONTENT_SOURCE_DIR_*`-Angaben sparen den JUCE- und
+Catch2-Download, weil Voxx sie schon heruntergeladen hat. `KEYY_COPY_PLUGIN`
+muss aus bleiben, solange nicht mit Adminrechten gebaut wird.
+
+### Messungen wiederholen
+
+```bat
+keyy-cli --batch <ordner> [--labels <ordner>] --profile all --csv ergebnis.csv
+python tools/learn_profile.py ergebnis.csv --profile
+```
+
+Zusätzliche Schalter für Versuche: `--threshold`, `--tonality`,
+`--exponent`, `--min-hz`, `--max-hz`, `--threads`.
+
+**Wichtig:** Das Profil `edm` gehört zu genau einer Chroma-Einstellung
+(Schwelle 2, Exponent 0,5, Tonalitätsgewichtung 1). Wer daran dreht, muss es
+mit `tools/learn_profile.py` neu lernen, sonst misst man ein Profil gegen
+ein Chromagramm, zu dem es nicht passt.
+
+### Was mit der Sitzung verloren ging
+
+Die 301 GiantSteps-MP3s und alle Zwischen-CSVs lagen im Scratchpad und sind
+weg. Wiederherstellbar: MD5-Listen in `testdata/giantsteps/md5`, Quelle
+`https://www.cp.jku.at/datasets/giantsteps/backup/<id>.mp3`, Rückfall
+`https://geo-samples.beatport.com/lofi/<id>.mp3`. Die Beschriftungen liegen
+im Repo-Ordner `testdata/giantsteps/annotations/key` (geklont, nicht
+eingecheckt — `testdata/` ist in `.gitignore`, weil der Projektordner von
+Nextcloud synchronisiert wird).
 
 ## Referenzen
 

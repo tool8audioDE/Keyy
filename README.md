@@ -136,6 +136,21 @@ Beschriftung im Sample-Pack selbst falsch oder meint die Paralleltonart.
 Für den GiantSteps-Datensatz liegen die Tonarten in eigenen Dateien:
 `--labels testdata/giantsteps/annotations/key`.
 
+### 4. Ein eigenes Profil lernen
+
+Die CSV enthält das Chromagramm jeder Datei. Daraus lässt sich ein Profil
+mitteln und ehrlich prüfen — gelernt auf der einen Hälfte, getestet auf der
+anderen:
+
+```bat
+python tools/learn_profile.py ergebnis.csv --profile
+```
+
+Das ist der Weg, auf dem das mitgelieferte Profil `edm` entstanden ist. Wer
+an Schwelle, Exponent oder Tonalitätsgewichtung dreht, muss es damit neu
+lernen: Ein Profil gehört immer zu genau der Chroma-Einstellung, unter der
+es gemessen wurde.
+
 ---
 
 ## Verfahren
