@@ -1,0 +1,50 @@
+name: DSP-Tests
+
+# Wie bei Voxx: Geprueft wird vor allem der DSP-Kern. Er kennt JUCE nicht und
+# baut deshalb in Sekunden - und dort sitzt alles, was beim Aendern
+# kaputtgehen kann: Chromagramm, Stimmton, Tonart-Profile, Tempo.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Konfigurieren
+        run: cmake -B build -DKEYY_BUILD_PLUGIN=OFF -DCMAKE_BUILD_TYPE=Release
+
+      - name: Bauen
+        run: cmake --build build --config Release
+
+      - name: Tests ausfuehren
+        run: ./build/keyy-tests
+
+  # Zweiter Auftrag, weil die Zielplattform Windows ist und MSVC ein anderer
+  # Compiler als GCC.
+  windows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: DSP-Kern konfigurieren
+        run: cmake -B build-dsp -DKEYY_BUILD_PLUGIN=OFF
+
+      - name: DSP-Kern bauen
+        run: cmake --build build-dsp --config Release
+
+      - name: Tests ausfuehren
+        run: .\build-dsp\Release\keyy-tests.exe
+
+      # KEYY_COPY_PLUGIN=OFF: Auf dem Bau-Server gibt es keine DAW, und der
+      # Schreibzugriff auf den System-Ordner wuerde scheitern.
+      - name: Plugin konfigurieren
+        run: cmake -B build -DKEYY_BUILD_TESTS=OFF -DKEYY_BUILD_CLI=OFF -DKEYY_COPY_PLUGIN=OFF
+
+      - name: VST3 und Standalone bauen
+        run: cmake --build build --config Release
