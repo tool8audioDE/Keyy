@@ -161,9 +161,9 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
   `edm`. Das Profil gehört zu genau diesen Einstellungen — wer sie ändert,
   muss es neu lernen (Mittel der Chroma-Spalten aus `--csv`, gedreht auf
   den beschrifteten Grundton).
-* Git: lokal initialisiert, Branch `main`, erster Commit `78887a8`
-  („Keyy 0.1.0“). **Kein GitHub-Remote** — falls gewünscht, muss das Repo
-  dort noch angelegt werden.
+* Git: lokal, Branch `main`, zuletzt `9bb8a0e` (Looplängen-Korrektur und
+  Tempo-Parser, 2026-09-12). **Kein GitHub-Remote** — falls gewünscht, muss
+  das Repo dort noch angelegt werden.
 
 ## Offene Punkte / Nächste Schritte
 
@@ -186,18 +186,20 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
       Tonleiter. `cmin_Düster_4_zig.mp3` ist durchgängig (alle sechs
       20-Sekunden-Abschnitte) E Minor, ein Eb kommt im Bass praktisch nicht
       vor — die Beschriftung war die Auto-Tune-Einstellung.
-- [x] **Erledigt 2026-09-12: Tempo an echten Loops geprüft.** 56 Dateien mit
-      Tempo im Namen: 41 exakt. Alle sechs Fehlgriffe waren exakt vier Takte
-      lange Dateien, bei denen der Looplängen-Abgleich die richtige Antwort
-      hatte und verwarf, weil die Einsatzmessung um 4/3 danebenlag. Behoben —
-      `TempoEstimator` lässt jetzt auch die Verhältnisse 3/4 und 4/3 zu, wenn
-      sich mit der Messung selbst keine Looplänge findet: 45 statt 41 exakt,
-      keine Verschlechterung. Der `parseBpm` liest zusätzlich das
-      Sample-Pack-Muster `Loop_120_`. Beides mit Testfällen abgedeckt
-      (19 statt 18). Offen bleiben zwei echte Aussetzer der Einsatzerkennung
+- [x] **Erledigt 2026-09-12: Tempo an echten Loops geprüft und korrigiert**
+      (45 statt 41 von 56 exakt). Verfahren und Zahlen stehen im README,
+      Abschnitt „Messung an eigenen Loops → Tempo“.
+      Was dabei **offen bleibt**: zwei echte Aussetzer der Einsatzerkennung
       (`Anticipate` 95,9 statt 120, `Visualize` 68,6 statt 120) und die
       Spitzheits-Schwelle 7,5, die weiterhin nur aus synthetischen Signalen
       stammt.
+- [ ] **Bekannte Schwachstelle der 3/4-Regel:** Hat die 110-BPM-Vorliebe die
+      Einsatzmessung selbst schon halbiert (gemessen 80 statt 160), landet
+      der 3/4-Weg eine Oktave zu tief — 60 statt 120. An allen 65 eigenen
+      Dateien tritt das nicht auf; es brauchte ein völlig gleichförmiges
+      Kunstsignal, um es zu erzeugen. Falls es je an echtem Material
+      auffällt: Die Kandidaten der Looplänge müssten dann nach der Nähe zur
+      110-BPM-Mitte ausgewählt werden statt nach der Nähe zur Messung.
 - [ ] Wo soll der volle GiantSteps-Satz liegen (nicht im Nextcloud-Ordner)?
 - [ ] **Die eigenen Dateien bleiben unter 75 % (55,0 %).** Parametrierung und
       Profile sind damit ausgereizt — vier Profile gemessen, ein fünftes
@@ -260,6 +262,19 @@ weg. Wiederherstellbar: MD5-Listen in `testdata/giantsteps/md5`, Quelle
 im Repo-Ordner `testdata/giantsteps/annotations/key` (geklont, nicht
 eingecheckt — `testdata/` ist in `.gitignore`, weil der Projektordner von
 Nextcloud synchronisiert wird).
+
+Die CSVs der Sitzung vom 2026-09-12 lagen ebenfalls nur im Scratchpad. Sie
+sind in Sekunden neu erzeugt, die Audiodateien liegen ja in `testdata/`:
+
+```bat
+keyy-cli --batch testdata --profile all --csv eigene.csv
+python tools/learn_profile.py eigene.csv --profile
+```
+
+Achtung bei der CSV: Bei `--profile all` stehen in den Spalten `erkannt` und
+`verhaeltnis` die Werte des **ersten** Profils (krumhansl), nicht die von
+`edm`. Wer die Fehlgriffe von `edm` auswerten will, ruft `--profile edm`
+auf. Die Chroma-Spalten sind vom Profil unabhängig.
 
 ## Referenzen
 
