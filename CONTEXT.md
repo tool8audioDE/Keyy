@@ -84,8 +84,14 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
 
 ### Testdaten
 
-* **Eigene Dateien mit Tonart im Namen** legt der Nutzer nach `testdata/`
-  (in `.gitignore`, nicht im Repo). Auswertung: `keyy-cli --batch testdata`.
+* **Eigene Dateien mit Tonart im Namen** liegen in `testdata/`
+  (in `.gitignore`, nicht im Repo). Stand 2026-09-12: 65 Dateien — 61 Loops
+  aus Ghosthack-Packs (Bass und „Musical“, 80/100/120 BPM) und vier eigene
+  Beats. Auswertung: `keyy-cli --batch testdata`. **Die Ghosthack-Namen sind
+  brauchbare Beschriftungen**, anders als die eigenen Beats (deren Namen
+  nennen die Auto-Tune-Einstellung) — mit einer Ausnahme: Bei Einzelspuren
+  aus Construction Kits nennt der Name die Tonart des Kits, nicht die der
+  Datei (siehe README, der F#-Moll-Block).
 * **GiantSteps Key** (604 EDM-Ausschnitte, Beatport-Vorschauen, CC BY-SA für
   die Beschriftungen): Download ist **freigegeben**, Ziel
   `testdata/giantsteps/`. Auswertung mit `--labels`.
@@ -116,25 +122,37 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
    also wirkungslos.
 7. **Grundton aus dem Bass gewichten** (zweites Chromagramm bis 250 Hz, sein
    Grundton geht in die Entscheidung ein). Über Gewichte 0,25 bis 3
-   gemessen: 54,5 % gegen 54,8 % — Rauschen.
+   gemessen: 54,5 % gegen 54,8 % — Rauschen. **2026-09-12 an den eigenen
+   Loops nachgemessen und bestätigt:** Der stärkste Ton unter 250 Hz trifft
+   den beschrifteten Grundton in 46,7 % der Fälle, das volle Band in 61,7 %.
+   Der Bass ist schlechter, nicht besser. Endgültig erledigt.
 8. **Direkte Tonleiter-Erkennung** (12 Klassen statt 24 Tonarten, eigenes
    gelerntes Profil je Tonleiter): 65,5 % gegen 65,8 %, die die vorhandene
    24-Klassen-Rechnung ohnehin liefert. Kein Gewinn.
+9. **Profil aus den eigenen Dateien lernen** (2026-09-12, 60 beschriftete
+   Loops, kreuzvalidiert): 55,0 % exakt und 58,3 % Tonleiter gegen 55,0 %
+   und 61,7 % mit `edm`. Kein Gewinn — bei acht Beschriftungen und Klumpen
+   von 9 bis 15 Dateien je Tonart ist auch keiner zu erwarten.
 
 ---
 
-## Aktueller Stand (2026-09-11, Ende der ersten Sitzung)
+## Aktueller Stand (2026-09-12)
 
-* DSP-Kern, CLI, Tests (18 Fälle, grün), VST3 und Standalone bauen unter
+* DSP-Kern, CLI, Tests (19 Fälle, grün), VST3 und Standalone bauen unter
   Windows/MSVC (VS Build Tools 2022, CMake 4.4.1). JUCE und Catch2 wurden
   lokal aus `../Voxx/build/_deps` genommen (`FETCHCONTENT_SOURCE_DIR_*`).
 * Standalone per Computer-Use geprüft: Laden per Dialog (MP3), Anzeige,
   Tausch der Paralleltonart funktionieren. **Nicht geprüft:** Ziehen aus dem
   FL-Browser, Laden im FL-Projekt.
 * **GiantSteps, 301 Stücke: 54 % exakt, MIREX 64** mit dem gelernten Profil
-  `edm` (kreuzvalidiert 54,5 %). Das 75-%-Ziel gilt aber für die Dateien des
-  Nutzers — Loops aus Sample-Packs sind kurz und harmonisch eindeutiger als
-  EDM-Ausschnitte; die Zahl dort steht aus.
+  `edm` (kreuzvalidiert 54,5 %).
+* **Eigene Dateien, 60 beschriftete Loops: 55,0 % exakt, 61,7 % Tonleiter,
+  MIREX 62,5** — ebenfalls mit `edm`, das auch hier alle anderen Profile
+  schlägt. **Das 75-%-Ziel ist damit verfehlt.** Die Hoffnung, Sample-Pack-
+  Loops seien eindeutiger als EDM-Ausschnitte, hat sich nicht erfüllt: Es
+  ist praktisch dieselbe Zahl.
+* **Tempo, 56 Dateien mit Tempo im Namen: 45 exakt** (vorher 41, siehe
+  Looplängen-Korrektur unten).
 * Die 301 MP3s lagen nur im Scratchpad der Sitzung (nicht in `testdata/`,
   weil der Ordner von Nextcloud synchronisiert wird: ~850 MB für den
   vollen Satz). Neu laden: MD5-Dateien in `testdata/giantsteps/md5`,
@@ -149,13 +167,14 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
 
 ## Offene Punkte / Nächste Schritte
 
-- [ ] Nutzer legt **mehr** Testdateien nach `testdata/` (bisher 4, nötig
-      wären 30 bis 50) → `keyy-cli --batch testdata --profile all --csv
-      ergebnis.csv`. Danach entscheiden: `edm` behalten, ein Profil aus den
-      eigenen Dateien lernen, oder Sha'ath. **Vorsicht bei der Wertung:**
-      Die Namen stammen aus Auto-Tune-Einstellungen (siehe Nachtrag oben) —
-      am aussagekräftigsten ist die Tonleiter-Quote, und Fehlgriffe gehören
-      angehört, bevor sie als Fehler zählen.
+- [x] **Erledigt 2026-09-12: 65 Testdateien ausgewertet** (61 Ghosthack-Loops,
+      4 eigene Beats; 60 mit Tonart im Namen). Ergebnis: `edm` bleibt das
+      beste Profil mit 55,0 % exakt und 61,7 % Tonleiter — **das 75-%-Ziel
+      ist verfehlt**, und zwar praktisch auf GiantSteps-Niveau. Die Annahme,
+      Loops aus Sample-Packs seien eindeutiger, war falsch. Ein eigenes
+      Profil bringt nichts (Ablehnung 9), der Bass auch nicht (Ablehnung 7).
+      Zahlen und Fehleranalyse stehen jetzt im README, Abschnitt
+      „Messung an eigenen Loops“.
 - [x] **Im Plugin gefunden und behoben (2026-09-12):** JUCEs MP3-Dekoder
       bricht bei LAME-Dateien aus FL Studio kurz vor Ende ab (66,1 von
       66,3 s). Der Prozessor hat das als Fehler gewertet und gar kein
@@ -163,17 +182,35 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
       vollständig las. Jetzt wird ausgewertet, was lesbar war; ein Hinweis
       erscheint erst ab 1 s oder 2 % Verlust. Plugin und CLI liefern
       dasselbe Ergebnis (A Minor, 442,6 Hz, 87 BPM).
-- [ ] Ergebnis der ersten vier Dateien: 2 von 4 exakt, 3 von 4 auf die
+- [ ] Die vier eigenen Beats: 2 von 4 exakt, 3 von 4 auf die
       Tonleiter. `cmin_Düster_4_zig.mp3` ist durchgängig (alle sechs
       20-Sekunden-Abschnitte) E Minor, ein Eb kommt im Bass praktisch nicht
       vor — die Beschriftung war die Auto-Tune-Einstellung.
-- [ ] Tempo an echten Beats prüfen (Spitzheits-Schwelle 7,5 stammt nur aus
-      synthetischen Signalen; Vorliebe 110 BPM für halb/doppelt).
+- [x] **Erledigt 2026-09-12: Tempo an echten Loops geprüft.** 56 Dateien mit
+      Tempo im Namen: 41 exakt. Alle sechs Fehlgriffe waren exakt vier Takte
+      lange Dateien, bei denen der Looplängen-Abgleich die richtige Antwort
+      hatte und verwarf, weil die Einsatzmessung um 4/3 danebenlag. Behoben —
+      `TempoEstimator` lässt jetzt auch die Verhältnisse 3/4 und 4/3 zu, wenn
+      sich mit der Messung selbst keine Looplänge findet: 45 statt 41 exakt,
+      keine Verschlechterung. Der `parseBpm` liest zusätzlich das
+      Sample-Pack-Muster `Loop_120_`. Beides mit Testfällen abgedeckt
+      (19 statt 18). Offen bleiben zwei echte Aussetzer der Einsatzerkennung
+      (`Anticipate` 95,9 statt 120, `Visualize` 68,6 statt 120) und die
+      Spitzheits-Schwelle 7,5, die weiterhin nur aus synthetischen Signalen
+      stammt.
 - [ ] Wo soll der volle GiantSteps-Satz liegen (nicht im Nextcloud-Ordner)?
-- [ ] Falls die eigenen Dateien unter 75 % bleiben: nächster Hebel ist nicht
-      mehr die Parametrierung (ausgereizt, Plateau bei 55 % auf EDM), sondern
-      das Verfahren — z.B. Profil je Genre, Bass-Grundton gesondert
-      gewichten, oder ein neuronales Netz hinter `estimateKey`.
+- [ ] **Die eigenen Dateien bleiben unter 75 % (55,0 %).** Parametrierung und
+      Profile sind damit ausgereizt — vier Profile gemessen, ein fünftes
+      gelernt, kein Gewinn. Der nächste Hebel muss das Verfahren sein. Noch
+      nicht geprüft und zu diesem Material passend: **den Taktanfang stärker
+      gewichten.** Die Dateien sind erwiesenermaßen exakt auf ganze Takte
+      geschnitten (55 von 61 über die Looplänge bestätigt), und bei Loops
+      steht der Grundton meist auf der Eins. Danach bliebe nur noch ein
+      neuronales Netz hinter `estimateKey`.
+      **Aber zuerst ehrlich rechnen:** Neun der 60 Dateien sind Einzelspuren
+      eines Construction Kits, deren Tonleiter im Signal gar nicht steht
+      (siehe README). Ein Verfahren kann diese neun nicht gewinnen — ohne
+      sie liegt Keyy bei 60,8 % exakt und 68,6 % Tonleiter.
 - [ ] Plugin in FL Studio testen: Ziehen aus dem FL-Browser, Speichern im
       Projekt.
 - [ ] Später: Listen-Modus, Manual-Modus, Klaviatur mit Skalentönen,

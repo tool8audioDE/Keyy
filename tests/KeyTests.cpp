@@ -85,5 +85,8 @@ TEST_CASE ("Tempo aus Dateinamen")
     CHECK (parseBpm ("Dark Keys F#min 75 BPM.wav") == 75.0);
     CHECK (parseBpm ("Beat 92BPM.mp3") == 92.0);
     CHECK_FALSE (parseBpm ("149_5.wav").has_value());
+    CHECK (parseBpm ("Ghosthack Bass Loop_120_Decay Bass_E Minor.wav") == 120.0);
+    CHECK (parseBpm ("Pad Tempo 90 Am.wav") == 90.0);
+    CHECK_FALSE (parseBpm ("Loop_4_Bell Synth.wav").has_value());
     CHECK_FALSE (parseBpm ("Loop_1000bpm.wav").has_value());
 }

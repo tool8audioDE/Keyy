@@ -154,6 +154,33 @@ inline std::vector<float> drumLoop (double bpm, int bars, double sampleRate, dou
     return out;
 }
 
+/** Exakt geschnittener Loop, dessen Einsaetze auf punktierten Achteln
+    liegen — Kick und Snare halten das echte Raster, die Hi-Hats alle 0,75
+    Schlaege verleiten die Autokorrelation zum 4/3-fachen Tempo.
+*/
+inline std::vector<float> dottedLoop (double bpm, int bars, double sampleRate)
+{
+    const double beatSamples = 60.0 / bpm * sampleRate;
+    const auto length = static_cast<size_t> (std::llround (beatSamples * 4 * bars));
+    std::vector<float> out (length, 0.0f);
+    Noise noise;
+
+    for (int beat = 0; beat < bars * 4; ++beat)
+    {
+        const auto start = static_cast<size_t> (std::llround (beat * beatSamples));
+
+        if (beat % 4 == 0 || beat % 4 == 2)
+            addHit (out, sampleRate, start, 55.0, 0.5f, 0.05f, 0.08, noise);
+        else
+            addHit (out, sampleRate, start, 200.0, 0.2f, 0.3f, 0.04, noise);
+    }
+
+    for (double t = 0.0; t < static_cast<double> (length); t += beatSamples * 0.75)
+        addHit (out, sampleRate, static_cast<size_t> (t), 3000.0, 0.0f, 0.6f, 0.01, noise);
+
+    return out;
+}
+
 inline AnalysisResult analyse (const std::vector<float>& audio, double sampleRate,
                                const AnalysisSettings& settings = {}, int blockSize = 4096)
 {

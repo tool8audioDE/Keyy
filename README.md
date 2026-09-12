@@ -21,11 +21,12 @@ Entscheidungen sowie der offene Stand.
 | `KeyAnalyzer` (Dezimierung, blockweise) | fertig, getestet |
 | Dateinamen-Parser (Tonart, BPM) | fertig, getestet |
 | Offline-CLI inkl. Batch-Auswertung | fertig |
-| Unit-Tests | 18 Testfälle, grün |
+| Unit-Tests | 19 Testfälle, grün |
 | VST3 + Standalone | baut unter Windows/MSVC |
 | Oberfläche | minimal, ohne Gestaltung; Laden, Anzeige, Tauschen im Standalone geprüft |
 | Trefferquote GiantSteps (EDM, 301 Stücke) | **54 % exakt**, **66 % Tonleiter**, MIREX 64 — siehe unten |
-| Trefferquote an eigenen Loops/Beats | **offen** — bisher nur 4 Dateien, deren Namen aus Auto-Tune-Einstellungen stammen und nicht das Instrumental beschreiben |
+| Trefferquote an eigenen Loops/Beats (65 Dateien) | **55 % exakt**, **62 % Tonleiter**, MIREX 62,5 — siehe unten |
+| Tempo an eigenen Loops (61 Dateien) | **80 % exakt**, 90 % mit `/2` oder `x2` |
 | Listen- und Manual-Modus | später |
 
 ---
@@ -128,8 +129,12 @@ build-dsp\Release\keyy-cli --batch testdata --profile all --csv ergebnis.csv
 
 Durchläuft alle WAV/MP3-Dateien, liest die richtige Tonart aus dem
 Dateinamen (`Loop_Fm_140bpm.wav`) und zählt je Profil: exakt, Quinte,
-Paralleltonart, gleichnamig, andere, dazu den MIREX-Wert. Dateien ohne
-Tonart im Namen werden übersprungen. Die Fehlgriffe werden einzeln
+Paralleltonart, gleichnamig, andere, dazu den MIREX-Wert. Das Tempo wird
+mitgezählt, wenn es im Namen steht — entweder mit `bpm` (`140bpm`, `140 BPM`)
+oder als Zahl hinter `Loop` oder `Tempo`, wie es Sample-Packs schreiben
+(`Ghosthack Bass Loop_120_Decay Bass_E Minor.wav`). Eine bloße Zahl reicht
+nicht: `149_5.wav` ist kein Tempo. Dateien, die weder Tonart noch Tempo im
+Namen tragen, werden übersprungen. Die Fehlgriffe werden einzeln
 aufgelistet — die gehören angehört, nicht nur gezählt: Oft ist die
 Beschriftung im Sample-Pack selbst falsch oder meint die Paralleltonart.
 
@@ -193,6 +198,13 @@ halbem und doppeltem Tempo; der Rest ist Sache von `/2` und `x2`.
 **Tempo aus der Looplänge.** Ist die Datei höchstens 64 s lang und ergibt
 ihre Länge bei 1, 2, 4, 8 … Takten ein Tempo, das bis auf 0,02 BPM
 ganzzahlig ist und höchstens 4 % neben der Messung liegt, gilt dieses.
+Halbes und doppeltes Tempo deckt dieses Raster von selbst ab — die Taktzahlen
+verdoppeln sich ja. Was es nicht abdeckt, ist die Verzählung um **4/3**:
+Liegen die Einsätze auf punktierten Achteln, misst die Autokorrelation 160
+statt 120. Findet sich mit der Messung selbst keine Looplänge, sind deshalb
+auch die Verhältnisse 3/4 und 4/3 zugelassen. An den eigenen Loops hat das
+vier von sechs Tempo-Fehlgriffen behoben, ohne einen einzigen richtigen Wert
+zu verschlechtern.
 
 **Kein Tempo bei weichen Einsätzen.** Gehaltene Töne schweben gegeneinander,
 und die Schwebung ist periodisch — die Autokorrelation fände darin ein
@@ -258,6 +270,71 @@ keyy-cli --batch <giantsteps-audio> --labels testdata/giantsteps/annotations/key
 ```
 
 ---
+
+## Messung an eigenen Loops
+
+65 Dateien: 61 Loops aus Ghosthack-Packs (Bass und „Musical", 80/100/120 BPM)
+und vier eigene Beats. 60 davon tragen eine Tonart im Namen; fünf Bass-Loops
+nennen nur einen Grundton ohne Tongeschlecht und werden übersprungen.
+
+| Profil | exakt | Quinte | Parallele | gleichnamig | andere | MIREX | Tonleiter |
+|---|---|---|---|---|---|---|---|
+| krumhansl | 46,7 % | 6,7 % | 8,3 % | 15,0 % | 23,3 % | 55,5 | 55,0 % |
+| temperley | 40,0 % | 16,7 % | 8,3 % | 8,3 % | 26,7 % | 52,5 | 48,3 % |
+| shaath | 51,7 % | 8,3 % | 5,0 % | 15,0 % | 20,0 % | 60,3 | 56,7 % |
+| **edm** | **55,0 %** | 8,3 % | 6,7 % | 6,7 % | 23,3 % | **62,5** | **61,7 %** |
+
+**Das Ziel von 75 % ist verfehlt.** Die Annahme, Sample-Pack-Loops seien
+harmonisch eindeutiger als EDM-Ausschnitte, hat sich nicht bestätigt: Keyy
+liegt hier praktisch genauso wie an GiantSteps. Nach Herkunft: Bass-Loops
+66,7 %, Musical Loops 53,2 %, eigene Beats 2 von 4.
+
+**Ein eigenes Profil bringt nichts.** `learn_profile.py` auf diesen 60
+Dateien, kreuzvalidiert: 55,0 % exakt und 58,3 % Tonleiter — gleich bzw.
+schlechter als `edm`. Bei acht verschiedenen Beschriftungen und Klumpen von
+9 bis 15 Dateien je Tonart ist daraus auch nichts zu lernen.
+
+**Der Bass hilft auch hier nicht.** Der stärkste Ton im Band unter 250 Hz
+trifft den beschrifteten Grundton in 46,7 % der Fälle, das volle Band in
+61,7 %. Der Bass ist also *schlechter* als das Gesamtchromagramm — dasselbe
+Ergebnis wie an GiantSteps, diesmal an eigenem Material.
+
+**Die größte Fehlergruppe ist kein Rechenfehler.** Neun Dateien sind
+„F# Minor" beschriftet, sechs davon liegen daneben. Ihr Chromagramm zeigt
+durchgehend D am stärksten, dann A, dann E; F# ist schwach bis abwesend, und
+*weder G noch G#* kommen vor. Damit ist die Tonleiter aus dem Signal gar
+nicht entscheidbar — die vorhandenen Töne F#, A, B, D und E liegen sowohl in
+F#-Moll als auch in D-Dur. Es sind Einzelspuren eines Construction Kits: Der
+Name nennt die Tonart des Kits, die Datei spielt eine bVI–bIII–bVII-Figur,
+ohne den Grundton je zu bringen. Ohne diesen Neunerblock: 60,8 % exakt,
+68,6 % Tonleiter. Dieselbe Sorte Problem wie bei den Dateinamen aus
+Auto-Tune-Einstellungen — die Beschriftung beschreibt etwas anderes als die
+Datei.
+
+### Tempo
+
+56 Dateien tragen das Tempo im Namen (`Loop_120_`), nach der Parser-Erweiterung
+sind es 61 gezählte. Auf den 56 gemeinsamen Dateien:
+
+| | vorher | nachher |
+|---|---|---|
+| exakt (± 0,5 BPM) | 41 | **45** |
+| halb / doppelt | 5 | 5 |
+| daneben | 6 | **2** |
+| kein Tempo erkannt | 4 | 4 |
+
+Die vier gewonnenen Dateien sind genau die, bei denen die Einsatzmessung um
+4/3 danebenlag (160 statt 120, 133 statt 100) und der Looplängen-Abgleich sie
+deshalb verworfen hat; alle vier sind nachgemessen exakt vier Takte lang.
+Keine einzige Datei hat sich dabei verschlechtert. Die zwei verbliebenen
+Fehlgriffe (`Anticipate`: 95,9 statt 120, `Visualize`: 68,6 statt 120) sind
+echte Aussetzer der Einsatzerkennung, keine Verzählung.
+
+Nachmessen:
+
+```bat
+keyy-cli --batch testdata --profile all --csv eigene.csv
+```
 
 ## Aufbau
 

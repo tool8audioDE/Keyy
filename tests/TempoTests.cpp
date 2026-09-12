@@ -44,6 +44,20 @@ TEST_CASE ("Exakt geschnittener Loop: Tempo aus der Laenge, ganzzahlig")
     CHECK (result.bpmFromLoopLength);
 }
 
+TEST_CASE ("Verzaehlte Einsaetze: die Looplaenge behaelt recht")
+{
+    // Punktierte Achtel bringen die Autokorrelation auf das 4/3-fache
+    // Tempo: hier 100 statt 75. Die Datei ist aber exakt vier Takte lang,
+    // und das ist das staerkere Argument. Gemessen an Sample-Pack-Loops,
+    // die genau so danebenlagen (160 statt 120, 133 statt 100).
+    const auto result = test::analyse (test::dottedLoop (75.0, 4, 44100.0), 44100.0);
+
+    INFO ("erkannt: " << result.bpm);
+    REQUIRE (result.tempoValid);
+    CHECK (result.bpm == 75.0);
+    CHECK (result.bpmFromLoopLength);
+}
+
 TEST_CASE ("Loop mit Stille am Ende: kein Loop-Abgleich, Einsaetze entscheiden")
 {
     const auto result = test::analyse (test::drumLoop (93.0, 4, 44100.0, 0.37), 44100.0);

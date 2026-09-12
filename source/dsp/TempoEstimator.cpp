@@ -225,19 +225,35 @@ TempoEstimator::Result TempoEstimator::estimate (double durationSeconds) const
 
     if (durationSeconds > 0.0 && durationSeconds <= settings.maxLoopSeconds)
     {
-        for (int beats = 4; beats <= 1024; beats *= 2)
+        // Halbes und doppeltes Tempo deckt das Raster der Taktzahlen schon
+        // ab — 60 * beats / Dauer verdoppelt sich mit jedem Schritt. Was es
+        // nicht abdeckt, ist die Verzaehlung um 4/3: Liegen die Einsaetze
+        // auf punktierten Achteln, misst die Autokorrelation 160 statt 120.
+        // Deshalb erst die Uebereinstimmung suchen und die Verzaehlung nur
+        // zulassen, wenn sich sonst keine Looplaenge findet.
+        static const double ratios[] { 1.0, 3.0 / 4.0, 4.0 / 3.0 };
+
+        for (const double ratio : ratios)
         {
-            const double loopBpm = 60.0 * beats / durationSeconds;
+            const double expected = refined * ratio;
 
-            if (std::abs (loopBpm - refined) / refined > 0.04)
-                continue;
+            for (int beats = 4; beats <= 1024; beats *= 2)
+            {
+                const double loopBpm = 60.0 * beats / durationSeconds;
 
-            if (std::abs (loopBpm - std::round (loopBpm)) > 0.02)
-                continue;
+                if (std::abs (loopBpm - expected) / expected > 0.04)
+                    continue;
 
-            result.bpm = std::round (loopBpm);
-            result.fromLoopLength = true;
-            break;
+                if (std::abs (loopBpm - std::round (loopBpm)) > 0.02)
+                    continue;
+
+                result.bpm = std::round (loopBpm);
+                result.fromLoopLength = true;
+                break;
+            }
+
+            if (result.fromLoopLength)
+                break;
         }
     }
 

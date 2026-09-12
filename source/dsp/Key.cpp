@@ -69,6 +69,15 @@ namespace
         return ModeWord::Invalid;
     }
 
+    /** Sample-Packs schreiben das Tempo oft ohne "bpm" hinter eines dieser
+        Woerter: "Ghosthack Bass Loop_120_Decay Bass_E Minor". Eine blosse
+        Zahl reicht als Kennzeichen nicht — "149_5.wav" ist kein Tempo.
+    */
+    bool isTempoWord (const std::string& lower)
+    {
+        return lower == "loop" || lower == "tempo";
+    }
+
     struct NoteToken
     {
         int pitchClass;
@@ -230,6 +239,8 @@ std::optional<double> parseBpm (const std::string& text)
             digits = lower.substr (0, lower.size() - 3);
         else if (lower == "bpm" && i > 0)
             digits = tokens[i - 1];
+        else if (i > 0 && isTempoWord (toLower (tokens[i - 1])))
+            digits = lower;
         else
             continue;
 
