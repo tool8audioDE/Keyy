@@ -50,15 +50,15 @@ void printUsage()
         "keyy-cli <datei> [Optionen]           Tonart, Stimmton und Tempo einer Datei\n"
         "keyy-cli --batch <ordner> [Optionen]  Trefferquote ueber alle WAV/MP3 im Ordner\n"
         "\n"
-        "  --profile <name|all>  Tonart-Profil: krumhansl, temperley, shaath (Standard)\n"
+        "  --profile <name|all>  Tonart-Profil: krumhansl, temperley, shaath, edm (Standard)\n"
         "                        oder all, um alle zu vergleichen\n"
         "  --labels <ordner>     Tonart aus <ordner>/<name>.key statt aus dem Dateinamen\n"
         "                        (Format des GiantSteps-Datensatzes)\n"
         "  --csv <datei>         Ergebnis je Datei als CSV (nur --batch)\n"
         "  --report <datei.csv>  Chromagramm und Tonart-Werte mitschreiben (nur Einzeldatei)\n"
         "  --exponent <x>        Gewichtung der Spektralspitzen, Betrag^x (Standard 0.5)\n"
-        "  --threshold <x>       Spitze muss x-mal ueber ihrer Umgebung liegen (Standard 3)\n"
-        "  --tonality <x>        Rahmen nach tonalem Anteil gewichten, hoch x (Standard 0)\n"
+        "  --threshold <x>       Spitze muss x-mal ueber ihrer Umgebung liegen (Standard 2)\n"
+        "  --tonality <x>        Rahmen nach tonalem Anteil gewichten, hoch x (Standard 1)\n"
         "  --min-hz <Hz>         Untergrenze des Chromagramms (Standard 45)\n"
         "  --max-hz <Hz>         Obergrenze des Chromagramms (Standard 3500)\n"
         "  --threads <n>         Parallele Analysen im Batch (Standard: alle Kerne)\n";
@@ -146,6 +146,14 @@ std::string percent (int count, int total)
     return total > 0 ? fixed (100.0 * count / total, 1) + " %" : "-";
 }
 
+// Pfad aus einem Kommandozeilenargument. Nicht u8path: Windows uebergibt argv
+// in der ANSI-Codepage (Umlaute sind dort Einzelbytes und kein gueltiges UTF-8),
+// unter Linux sind es rohe Bytes. Beides ist genau die native schmale Kodierung.
+fs::path argPath (const std::string& arg)
+{
+    return fs::path (arg);
+}
+
 std::string displayName (const fs::path& path)
 {
     return path.filename().u8string();
@@ -203,7 +211,7 @@ std::string tempoText (const keyy::AnalysisResult& r)
 int runSingle (const Options& options)
 {
     std::string error;
-    const auto result = analyseFile (fs::u8path (options.input), options.settings, error);
+    const auto result = analyseFile (argPath (options.input), options.settings, error);
 
     if (! result)
     {
@@ -212,7 +220,7 @@ int runSingle (const Options& options)
     }
 
     const auto& r = *result;
-    std::cout << "Datei:      " << displayName (fs::u8path (options.input)) << " (" << fixed (r.durationSeconds, 1) << " s)\n";
+    std::cout << "Datei:      " << displayName (argPath (options.input)) << " (" << fixed (r.durationSeconds, 1) << " s)\n";
 
     if (! r.valid)
     {
@@ -238,7 +246,7 @@ int runSingle (const Options& options)
 
     if (! options.reportPath.empty())
     {
-        std::ofstream report (fs::u8path (options.reportPath));
+        std::ofstream report (argPath (options.reportPath));
         report << "tonklasse,anteil\n";
         for (int pc = 0; pc < 12; ++pc)
             report << keyy::noteName (pc) << ',' << r.chroma[static_cast<size_t> (pc)] << '\n';
@@ -284,7 +292,7 @@ std::string csvQuote (const std::string& text)
 
 int runBatch (const Options& options)
 {
-    const fs::path root = fs::u8path (options.input);
+    const fs::path root = argPath (options.input);
 
     if (! fs::is_directory (root))
     {
@@ -303,7 +311,7 @@ int runBatch (const Options& options)
 
         const auto stem = entry.path.stem().u8string();
         entry.label = options.labelsDir.empty() ? keyy::parseKey (stem)
-                                                : readLabelFile (fs::u8path (options.labelsDir) / (entry.path.stem().native() + fs::path (".key").native()));
+                                                : readLabelFile (argPath (options.labelsDir) / (entry.path.stem().native() + fs::path (".key").native()));
         entry.bpmLabel = keyy::parseBpm (stem);
         entries.push_back (std::move (entry));
     }
@@ -467,7 +475,7 @@ int runBatch (const Options& options)
 
     if (! options.csvPath.empty())
     {
-        std::ofstream csv (fs::u8path (options.csvPath));
+        std::ofstream csv (argPath (options.csvPath));
         // Das Chromagramm je Datei gehoert mit hinein: Erst gemittelt ueber
         // viele Dateien, gedreht auf die richtige Tonart, zeigt es, wo die
         // Erkennung systematisch danebenliegt.
