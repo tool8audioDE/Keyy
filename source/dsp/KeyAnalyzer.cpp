@@ -67,7 +67,7 @@ void KeyAnalyzer::prepare (double sampleRate, const AnalysisSettings& newSetting
     decimator.prepare (sampleRate, settings.analysisRate);
 
     auto chromaSettings = settings.chroma;
-    chromaSettings.recordFrames = settings.barWeighting > 0.0;
+    chromaSettings.recordFrames = settings.chroma.recordFrames || settings.barWeighting > 0.0;
     chroma.prepare (decimator.getOutputRate(), chromaSettings);
     tempo.prepare (decimator.getOutputRate(), settings.tempo);
 
@@ -163,6 +163,12 @@ AnalysisResult KeyAnalyzer::finish()
         result.runnerUpScore = estimate.runnerUpScore;
         result.keyScores     = estimate.scores;
         result.valid = true;
+    }
+
+    if (settings.chroma.recordFrames && chroma.getNumRecordedFrames() > 0)
+    {
+        result.frames = chroma.getRecordedFine();
+        result.frameBins = ChromaAccumulator::fineBins;
     }
 
     return result;

@@ -184,3 +184,66 @@ TEST_CASE ("Gleiche Gewichte für alle Rahmen ergeben das ungewichtete Chromagra
 
     CHECK (abstand > 1.0e-6);
 }
+
+TEST_CASE ("Aufgezeichnete Rahmen summieren sich zum Chromagramm der Datei")
+{
+    // Die Rahmen gehen per --frames nach draussen und sind dort Rohstoff
+    // zum Trainieren. Sie muessen deshalb genau das enthalten, woraus der
+    // Kern selbst sein Chromagramm bildet -- sonst trainiert man auf etwas
+    // anderem, als das Plugin spaeter rechnet.
+    const double sampleRate = 22050.0;
+    const Key dMinor { 2, Mode::Minor };
+    const auto audio = test::cadence (dMinor, sampleRate, 1.0, 440.0, 2);
+
+    AnalysisSettings settings;
+    settings.detectTempo = false;
+    settings.chroma.recordFrames = true;
+
+    const auto result = test::analyse (audio, sampleRate, settings);
+    REQUIRE (result.valid);
+    REQUIRE (result.frameBins == ChromaAccumulator::fineBins);
+    REQUIRE (result.frames.size() % static_cast<size_t> (result.frameBins) == 0);
+
+    const auto rahmen = result.frames.size() / static_cast<size_t> (result.frameBins);
+    REQUIRE (rahmen > 0);
+
+    // Rahmen aufsummieren und wie der Kern auf zwoelf Tonklassen falten.
+    std::array<double, ChromaAccumulator::fineBins> summe {};
+    for (size_t f = 0; f < rahmen; ++f)
+        for (int i = 0; i < result.frameBins; ++i)
+            summe[static_cast<size_t> (i)] += result.frames[f * static_cast<size_t> (result.frameBins) + static_cast<size_t> (i)];
+
+    std::array<double, 12> chroma {};
+    const double shift = result.tuningCents / 100.0;
+    for (int i = 0; i < ChromaAccumulator::fineBins; ++i)
+    {
+        const double lage = static_cast<double> (i) / ChromaAccumulator::binsPerSemitone - shift;
+        const double unten = std::floor (lage);
+        const double anteil = lage - unten;
+        const int halbton = static_cast<int> (unten);
+        chroma[static_cast<size_t> (wrap (halbton, 12))]     += summe[static_cast<size_t> (i)] * (1.0 - anteil);
+        chroma[static_cast<size_t> (wrap (halbton + 1, 12))] += summe[static_cast<size_t> (i)] * anteil;
+    }
+
+    double gesamt = 0.0;
+    for (const auto v : chroma) gesamt += v;
+    REQUIRE (gesamt > 0.0);
+    for (auto& v : chroma) v /= gesamt;
+
+    for (size_t i = 0; i < 12; ++i)
+        CHECK (chroma[i] == Catch::Approx (result.chroma[i]).margin (1.0e-9));
+}
+
+TEST_CASE ("Ohne recordFrames bleiben die Rahmen leer")
+{
+    const double sampleRate = 22050.0;
+    const auto audio = test::cadence (Key { 0, Mode::Major }, sampleRate, 1.0, 440.0, 2);
+
+    AnalysisSettings settings;
+    settings.detectTempo = false;
+
+    const auto result = test::analyse (audio, sampleRate, settings);
+    REQUIRE (result.valid);
+    CHECK (result.frames.empty());
+    CHECK (result.frameBins == 0);
+}

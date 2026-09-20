@@ -39,6 +39,7 @@ struct Options
     std::string labelsDir;
     std::string csvPath;
     std::string reportPath;
+    std::string framesPath;
     std::vector<keyy::Profile> profiles { keyy::defaultProfile };
     keyy::AnalysisSettings settings;
     int threads = 0;
@@ -116,6 +117,7 @@ bool parse (int argc, char** argv, Options& options)
         else if (flag == "--threshold") options.settings.chroma.peakThreshold = std::stod (value);
         else if (flag == "--tonality") options.settings.chroma.tonalityWeighting = std::stod (value);
         else if (flag == "--bar-weight") options.settings.barWeighting = std::stod (value);
+        else if (flag == "--frames")   options.framesPath = value;
         else if (flag == "--min-hz")   options.settings.chroma.minHz = std::stod (value);
         else if (flag == "--max-hz")   options.settings.chroma.maxHz = std::stod (value);
         else if (flag == "--threads")  options.threads = std::stoi (value);
@@ -515,6 +517,47 @@ int runBatch (const Options& options)
         std::cout << "\nCSV: " << options.csvPath << "\n";
     }
 
+    if (! options.framesPath.empty())
+    {
+        // Rohstoff fuer einen Klassifikator ausserhalb dieses Programms.
+        // Format, alles little endian:
+        //   "KEYYFRM1"  8 Byte
+        //   int32 bins, int32 anzahl
+        //   je Eintrag: int32 namelaenge, name, int32 tonart (0..23, -1 = keine),
+        //               int32 rahmen, float32[rahmen * bins]
+        std::ofstream out (argPath (options.framesPath), std::ios::binary);
+        const auto schreibe = [&out] (int32_t v) { out.write (reinterpret_cast<const char*> (&v), 4); };
+
+        int32_t bins = 0, anzahl = 0;
+        for (const auto& e : entries)
+            if (e.analysed && ! e.result.frames.empty())
+            {
+                bins = e.result.frameBins;
+                ++anzahl;
+            }
+
+        out.write ("KEYYFRM1", 8);
+        schreibe (bins);
+        schreibe (anzahl);
+
+        for (const auto& e : entries)
+        {
+            if (! e.analysed || e.result.frames.empty())
+                continue;
+
+            const auto name = fs::relative (e.path, root).u8string();
+            schreibe (static_cast<int32_t> (name.size()));
+            out.write (name.data(), static_cast<std::streamsize> (name.size()));
+            schreibe (e.label ? static_cast<int32_t> (e.label->index()) : -1);
+            schreibe (static_cast<int32_t> (e.result.frames.size() / static_cast<size_t> (bins)));
+            out.write (reinterpret_cast<const char*> (e.result.frames.data()),
+                       static_cast<std::streamsize> (e.result.frames.size() * sizeof (float)));
+        }
+
+        std::cout << "Rahmen: " << options.framesPath << " (" << anzahl << " Dateien, "
+                  << bins << " Faecher je Rahmen)\n";
+    }
+
     return 0;
 }
 
@@ -531,6 +574,8 @@ int main (int argc, char** argv)
             printUsage();
             return 1;
         }
+
+        options.settings.chroma.recordFrames = ! options.framesPath.empty();
 
         return options.batch ? runBatch (options) : runSingle (options);
     }

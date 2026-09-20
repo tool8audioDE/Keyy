@@ -116,6 +116,11 @@ public:
     /** Mitte des aufgezeichneten Rahmens i in Sekunden seit Dateianfang. */
     double getRecordedFrameCentre (int index) const noexcept;
 
+    /** Alle aufgezeichneten Rahmen hintereinander, fineBins Werte je Rahmen.
+        Für das Training eines Klassifikators ausserhalb dieses Programms.
+    */
+    const std::vector<float>& getRecordedFine() const noexcept { return recordedFine; }
+
     const std::array<double, fineBins>& getFineChroma() const noexcept { return fine; }
 
 private:

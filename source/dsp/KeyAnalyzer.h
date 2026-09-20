@@ -62,6 +62,13 @@ struct AnalysisResult
     bool   barWeighted = false;
     double barSeconds = 0.0;
     double barPhase = 0.0;
+
+    /** Nur gefüllt, wenn chroma.recordFrames gesetzt ist: das feine
+        Chromagramm jedes Rahmens hintereinander, frameBins Werte je Rahmen.
+        Rohstoff für das Training ausserhalb; im Plugin bleibt es leer.
+    */
+    std::vector<float> frames;
+    int frameBins = 0;
 };
 
 /** Die ganze Analyse einer Datei hinter einer Schnittstelle.
