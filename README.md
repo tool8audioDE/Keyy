@@ -16,7 +16,7 @@ Entscheidungen sowie der offene Stand.
 | Baustein | Zustand |
 |---|---|
 | `ChromaAccumulator` (Spektralspitzen, Stimmton) | fertig, getestet |
-| `KeyEstimator` (4 Profile, 24 Tonarten) | fertig, getestet |
+| `KeyEstimator` (5 Profile, 24 Tonarten) | fertig, getestet |
 | `TempoEstimator` (Einsätze, Looplänge) | fertig, getestet |
 | `KeyAnalyzer` (Dezimierung, blockweise) | fertig, getestet |
 | Dateinamen-Parser (Tonart, BPM) | fertig, getestet |
@@ -25,7 +25,8 @@ Entscheidungen sowie der offene Stand.
 | VST3 + Standalone | baut unter Windows/MSVC |
 | Oberfläche | minimal, ohne Gestaltung; Laden, Anzeige, Tauschen im Standalone geprüft |
 | Trefferquote GiantSteps (EDM, 301 Stücke) | **54 % exakt**, **66 % Tonleiter**, MIREX 64 — siehe unten |
-| Trefferquote an eigenen Loops/Beats (65 Dateien) | **55 % exakt**, **62 % Tonleiter**, MIREX 62,5 — siehe unten |
+| Trefferquote an eigenen Loops/Beats (65 Dateien) | **62 % exakt**, **67 % Tonleiter**, MIREX 68 — siehe unten |
+| Trefferquote Hip-Hop/Trap-Pack (35 Dateien) | **69 % exakt**, **74 % Tonleiter**, MIREX 77 |
 | Tempo an eigenen Loops (61 Dateien) | **80 % exakt**, 90 % mit `/2` oder `x2` |
 | Listen- und Manual-Modus | später |
 
@@ -282,7 +283,8 @@ nennen nur einen Grundton ohne Tongeschlecht und werden übersprungen.
 | krumhansl | 46,7 % | 6,7 % | 8,3 % | 15,0 % | 23,3 % | 55,5 | 55,0 % |
 | temperley | 40,0 % | 16,7 % | 8,3 % | 8,3 % | 26,7 % | 52,5 | 48,3 % |
 | shaath | 51,7 % | 8,3 % | 5,0 % | 15,0 % | 20,0 % | 60,3 | 56,7 % |
-| **edm** | **55,0 %** | 8,3 % | 6,7 % | 6,7 % | 23,3 % | **62,5** | **61,7 %** |
+| edm | 55,0 % | 8,3 % | 6,7 % | 6,7 % | 23,3 % | 62,5 | 61,7 % |
+| **mix** | **61,7 %** | 8,3 % | 5,0 % | 3,3 % | 21,7 % | **68,0** | **66,7 %** |
 
 **Das Ziel von 75 % ist verfehlt.** Die Annahme, Sample-Pack-Loops seien
 harmonisch eindeutiger als EDM-Ausschnitte, hat sich nicht bestätigt: Keyy
@@ -335,6 +337,57 @@ Nachmessen:
 ```bat
 keyy-cli --batch testdata --profile all --csv eigene.csv
 ```
+
+## Messung an 22 Sample-Packs — warum `mix` das Standardprofil ist
+
+Die Sammlung des Nutzers (22 199 Dateien) enthält 2 753 Dateien mit einer
+Tonart im Namen. Davon bleiben nach Abzug von Doppelungen (MP3 neben WAV,
+Dry-/Wet-Paare) und von Material ohne eigene Tonart (Schlagzeug, Effekte,
+Einzeltöne, Adlibs und Vocal-Chops, deren Name die Tonart des Kits nennt)
+**1 263 Dateien aus 22 Packs** übrig.
+
+Zwei Ergebnisse daraus:
+
+**Ein global gelerntes Profil bringt nichts.** Auf allen 1 263 Dateien
+gelernt und pack-weise geprüft (lernen auf 21 Packs, prüfen auf dem 22.):
+37,4 % exakt gegen 38,3 % für `edm`. Das bestätigt an 1 263 Dateien, was
+vorher an 60 gemessen wurde.
+
+**Die Profilwahl hängt aber am Genre.** `edm` wurde an EDM gelernt und ist
+dort stark; auf akustischem und Hip-Hop-Material verliert es:
+
+| Pack | n | `edm` | `mix` |
+|---|---|---|---|
+| Loopmasters Tech House | 17 | **64,7 %** | 35,3 % |
+| Loopmasters Techno | 16 | **62,5 %** | 37,5 % |
+| Ghosthack Ultimate Techno Essentials | 97 | **55,7 %** | 39,2 % |
+| Ghosthack Future House & Bass | 198 | **38,9 %** | 29,8 % |
+| Ghosthack Ultimate Melodic Library | 109 | 37,6 % | **41,3 %** |
+| Ghosthack Lo-Fi Hip Hop | 46 | 37,0 % | **41,3 %** |
+| Ghosthack Ambient Soundscapes (Bass-Loops) | 55 | 56,4 % | **61,8 %** |
+| Cymatics Piano and String Loops | 20 | 55,0 % | **65,0 %** |
+| Loopmasters Cinematic | 21 | 52,4 % | **66,7 %** |
+| Loopmasters Hip Hop & Trap | 30 | 63,3 % | **76,7 %** |
+
+`mix` ist das Mittel aus Sha'ath und `edm`, beide vorher auf gleiche Lage
+und Streuung gebracht. Entdeckt wurde es daran, dass die **Summe** der
+Korrelationen beider Profile besser trifft als jedes einzelne — und weil
+die Korrelation gegen Verschieben und Skalieren unempfindlich ist, tut ein
+einziges gemitteltes Profil genau dasselbe, ohne den Schätzer zu ändern.
+
+Weil das Material des Nutzers Trap und Hip-Hop ist, ist `mix` die Vorgabe.
+**Für Techno oder House ist `edm` die richtige Wahl** — der Unterschied
+beträgt dort 9 bis 29 Punkte in die andere Richtung. Ein Profil, das beides
+kann, gibt es nach diesem Stand nicht; auf der durchmischten
+Gesamtbibliothek liegen beide fast gleichauf (27,0 % gegen 25,2 %).
+
+Was dabei auffiel und die Zahlen erklärt: **Menge ist nicht Qualität.** Von
+den 2 753 beschrifteten Dateien tragen die meisten den Namen eines
+Construction Kits. Packs, deren Namen die Tonart der jeweiligen Datei
+meinen, erreichen 50 bis 77 %; Packs mit Kit-Beschriftung bleiben bei 9 bis
+20 % — etwa „Upfront Drum and Bass" mit 105 Bass-Loops bei 12,4 %.
+
+---
 
 ## Aufbau
 

@@ -50,7 +50,7 @@ void printUsage()
         "keyy-cli <datei> [Optionen]           Tonart, Stimmton und Tempo einer Datei\n"
         "keyy-cli --batch <ordner> [Optionen]  Trefferquote ueber alle WAV/MP3 im Ordner\n"
         "\n"
-        "  --profile <name|all>  Tonart-Profil: krumhansl, temperley, shaath, edm (Standard)\n"
+        "  --profile <name|all>  Tonart-Profil: krumhansl, temperley, shaath, edm, mix (Standard)\n"
         "                        oder all, um alle zu vergleichen\n"
         "  --labels <ordner>     Tonart aus <ordner>/<name>.key statt aus dem Dateinamen\n"
         "                        (Format des GiantSteps-Datensatzes)\n"

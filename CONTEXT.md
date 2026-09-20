@@ -95,6 +95,17 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
 * **GiantSteps Key** (604 EDM-Ausschnitte, Beatport-Vorschauen, CC BY-SA für
   die Beschriftungen): Download ist **freigegeben**, Ziel
   `testdata/giantsteps/`. Auswertung mit `--labels`.
+* **Die Sample-Bibliothek des Nutzers** unter `FL Sample Packs/fl sample
+  packs` auf der 5TB-Platte (22 199 Dateien, davon 2 753 mit Tonart im
+  Namen) ist als Messgrundlage erschlossen. Der ganze Ordner läuft in 23
+  Sekunden durch (`keyy-cli --batch`). **Achtung, zwei Fallen:**
+  `testdata/` ist eine Teilmenge dieser Bibliothek (56 Dateien) — ohne
+  Dedup trainiert man auf den eigenen Testdaten. Und die Menge trügt: Nur
+  Packs, deren Dateinamen die Tonart der jeweiligen Datei meinen, sind
+  brauchbar (50 bis 77 %); Packs mit Construction-Kit-Beschriftung liegen
+  bei 9 bis 20 %. Nach Abzug von Doppelungen (MP3 neben WAV, Dry-/Wet-
+  Paare) und untauglichem Material (Schlagzeug, Effekte, Einzeltöne,
+  Adlibs, Vocal-Chops) bleiben 1 263 Dateien aus 22 Packs.
 * Synthetische Signale in den Catch2-Tests prüfen die Mechanik, nicht die
   Praxistauglichkeit.
 
@@ -133,6 +144,16 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
    Loops, kreuzvalidiert): 55,0 % exakt und 58,3 % Tonleiter gegen 55,0 %
    und 61,7 % mit `edm`. Kein Gewinn — bei acht Beschriftungen und Klumpen
    von 9 bis 15 Dateien je Tonart ist auch keiner zu erwarten.
+10. **Profil aus der ganzen Sample-Bibliothek lernen** (2026-09-20, 1263
+   beschriftete Loops aus 22 Packs, pack-weise kreuzvalidiert — lernen auf
+   21 Packs, prüfen auf dem 22.): 37,4 % gegen 38,3 % für `edm`. Damit ist
+   Ablehnung 9 an zwanzigfacher Datenmenge bestätigt: **ein global
+   gelerntes Profil bringt nichts.** Wichtig ist dabei der Unterschied
+   zwischen den Prüfarten — dieselben Daten liefern 63,2 % bei
+   Leave-one-out, aber 56,8 % pack-weise. Leave-one-out leckt, weil
+   Dateien desselben Kits dieselbe Tonart und fast dasselbe Material
+   haben. **Nur die pack-weise Zahl zählt**, sie beantwortet die richtige
+   Frage: Was passiert bei einem neuen Pack?
 
 ---
 
@@ -146,11 +167,16 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
   FL-Browser, Laden im FL-Projekt.
 * **GiantSteps, 301 Stücke: 54 % exakt, MIREX 64** mit dem gelernten Profil
   `edm` (kreuzvalidiert 54,5 %).
-* **Eigene Dateien, 60 beschriftete Loops: 55,0 % exakt, 61,7 % Tonleiter,
-  MIREX 62,5** — ebenfalls mit `edm`, das auch hier alle anderen Profile
-  schlägt. **Das 75-%-Ziel ist damit verfehlt.** Die Hoffnung, Sample-Pack-
-  Loops seien eindeutiger als EDM-Ausschnitte, hat sich nicht erfüllt: Es
-  ist praktisch dieselbe Zahl.
+* **Eigene Dateien, 60 beschriftete Loops: 61,7 % exakt, 66,7 % Tonleiter,
+  MIREX 68,0** — mit dem neuen Vorgabeprofil `mix` (2026-09-20). Vorher
+  55,0/61,7/62,5 mit `edm`. **Das 75-%-Ziel ist weiter verfehlt**, aber der
+  Abstand ist von 20 auf 13 Punkte geschrumpft.
+* **Die Profilwahl hängt am Genre — das ist der Kern der Sitzung vom
+  2026-09-20.** `edm` wurde an EDM gelernt und ist dort stark (Tech House
+  64,7 %, Techno 62,5 %); auf Hip-Hop, Trap, Cinematic und akustischem
+  Material verliert es gegen `mix` (Loopmasters Hip Hop & Trap 76,7 gegen
+  63,3 %). Weil das Material des Nutzers Trap und Hip-Hop ist, ist `mix`
+  jetzt die Vorgabe. **Für EDM bleibt `--profile edm` richtig.**
 * **Tempo, 56 Dateien mit Tempo im Namen: 45 exakt** (vorher 41, siehe
   Looplängen-Korrektur unten).
 * Die 301 MP3s lagen nur im Scratchpad der Sitzung (nicht in `testdata/`,
@@ -158,9 +184,10 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
   vollen Satz). Neu laden: MD5-Dateien in `testdata/giantsteps/md5`,
   Quelle `https://www.cp.jku.at/datasets/giantsteps/backup/<id>.mp3`.
 * Vorgaben jetzt: Schwelle 2, Exponent 0,5, Tonalitätsgewichtung 1, Profil
-  `edm`. Das Profil gehört zu genau diesen Einstellungen — wer sie ändert,
-  muss es neu lernen (Mittel der Chroma-Spalten aus `--csv`, gedreht auf
-  den beschrifteten Grundton).
+  `mix`. `edm` gehört zu genau diesen Einstellungen — wer sie ändert, muss
+  es neu lernen (Mittel der Chroma-Spalten aus `--csv`, gedreht auf den
+  beschrifteten Grundton), und `mix` als dessen Mittel mit Sha'ath gleich
+  mit.
 * Git: lokal, Branch `main`, zuletzt `9bb8a0e` (Looplängen-Korrektur und
   Tempo-Parser, 2026-09-12). **Kein GitHub-Remote** — falls gewünscht, muss
   das Repo dort noch angelegt werden.
@@ -201,9 +228,11 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
       auffällt: Die Kandidaten der Looplänge müssten dann nach der Nähe zur
       110-BPM-Mitte ausgewählt werden statt nach der Nähe zur Messung.
 - [ ] Wo soll der volle GiantSteps-Satz liegen (nicht im Nextcloud-Ordner)?
-- [ ] **Die eigenen Dateien bleiben unter 75 % (55,0 %).** Parametrierung und
-      Profile sind damit ausgereizt — vier Profile gemessen, ein fünftes
-      gelernt, kein Gewinn. Der nächste Hebel muss das Verfahren sein. Noch
+- [ ] **Die eigenen Dateien bleiben unter 75 % (jetzt 61,7 % mit `mix`).**
+      Profile sind damit weitgehend ausgereizt: vier gemessen, zwei
+      gelernt (GiantSteps und 1263 Loops), eines gemischt. Nur die
+      Mischung brachte etwas (+6,7 Punkte). Der nächste Hebel muss das
+      Verfahren sein. Noch
       nicht geprüft und zu diesem Material passend: **den Taktanfang stärker
       gewichten.** Die Dateien sind erwiesenermaßen exakt auf ganze Takte
       geschnitten (55 von 61 über die Looplänge bestätigt), und bei Loops

@@ -8,9 +8,15 @@ Erste Fassung, nur der Modus „Use File“.
 
 * `ChromaAccumulator` — Chromagramm aus Spektralspitzen, Stimmton aus einem
   Cent-Histogramm, beides in einem Durchgang.
-* `KeyEstimator` — Korrelation mit 24 Tonarten, vier Profile (Krumhansl,
-  Temperley, Sha'ath und `edm`, aus dem eigenen Chromagramm an GiantSteps
-  gelernt — dort 54 % exakt statt 46 % mit Sha'ath).
+* `KeyEstimator` — Korrelation mit 24 Tonarten, fünf Profile (Krumhansl,
+  Temperley, Sha'ath, `edm`, aus dem eigenen Chromagramm an GiantSteps
+  gelernt — dort 54 % exakt statt 46 % mit Sha'ath — und `mix`).
+* Profil `mix`, Vorgabe: das Mittel aus Sha'ath und `edm`. An 1263
+  beschrifteten Loops aus 22 Sample-Packs gemessen. Auf Hip-Hop, Trap,
+  Cinematic und akustischem Material 4 bis 14 Punkte besser als `edm`
+  (eigene Dateien 61,7 statt 55,0 % exakt, Loopmasters Hip Hop & Trap 68,6
+  statt 57,1 %), auf Techno und House ebenso deutlich schlechter. Wer EDM
+  analysiert, nimmt weiter `--profile edm`.
 * Tonalitätsgewichtung der Rahmen und Spitzen-Schwelle 2 statt 3, beides an
   GiantSteps gemessen.
 * Tempo: keine Angabe, wenn die Einsätze zu weich sind (Schwebung
