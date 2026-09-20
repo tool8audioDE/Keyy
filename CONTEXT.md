@@ -189,6 +189,31 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
    oft die Snare auf der Zwei. Deshalb gilt bei bestätigter Looplänge
    jetzt Phase 0.
 
+12. **Neuronales Netz hinter `estimateKey`** (2026-09-20, gebaut und
+   gemessen). Nicht rundweg verworfen, aber **allein schlechter als die
+   Profile auf dem Material des Nutzers** und im Verbund nur wenig besser.
+   Zahlen und Aufbau stehen im README („Ein neuronales Netz -- was es
+   bringt"), die Werkzeuge in `tools/train_net.py` und
+   `tools/frames_io.py`.
+
+   Kurzfassung: Nur auf EDM trainiert, schlaegt es auf GiantSteps jedes
+   Profil (60,3 gegen 53,1 %) und faellt auf Hip-Hop auf 26,9 %.
+   Gemischtes Trainingsmaterial macht es ausgewogen (56,5 / 50,5 %).
+   Zusammen mit `mix` gewichtet (0,4 Netz, 0,6 Profil) ist es ueberall
+   2,5 bis 4,3 Punkte besser, ohne irgendwo zu verlieren -- auf den
+   eigenen Dateien allerdings plus/minus null.
+
+   **Offen ist damit nur noch die Kostenfrage**, nicht die Machbarkeit:
+   Im Plugin braeuchte es den Vorwaertspfad von Hand in C++ (vier
+   Faltungsbloecke, zyklisch ueber die Tonhoehe) plus rund 450 kB
+   Gewichte, fuer ein paar Punkte. Das 75-%-Ziel ruecken sie nicht in
+   Reichweite.
+
+   **Der Mischungsanteil 0,4 ist an denselben Pruefsaetzen abgelesen**, an
+   denen er berichtet wird. Alles zwischen 0,25 und 0,5 wirkt aehnlich, es
+   haengt also nicht an einer Messerschneide -- der wahre Gewinn liegt
+   aber eher am unteren Rand.
+
 ---
 
 ## Aktueller Stand (2026-09-12)
@@ -199,8 +224,14 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
 * Standalone per Computer-Use geprüft: Laden per Dialog (MP3), Anzeige,
   Tausch der Paralleltonart funktionieren. **Nicht geprüft:** Ziehen aus dem
   FL-Browser, Laden im FL-Projekt.
-* **GiantSteps, 301 Stücke: 54 % exakt, MIREX 64** mit dem gelernten Profil
-  `edm` (kreuzvalidiert 54,5 %).
+* **GiantSteps liegt jetzt vollständig vor** (604 Stücke, MD5-geprüft) unter
+  `D:/Datasets/giantsteps/audio`, dazu GiantSteps MTG Key (1 158 Stücke
+  mit Konfidenz 2) unter `D:/Datasets/giantsteps-mtg/audio`. Damit ist
+  der offene Punkt „wo soll der Satz liegen" erledigt — **nicht** im
+  Nextcloud-Ordner. Auf allen 604: `edm` 53,1 % exakt, 62,6 % Tonleiter,
+  MIREX 63,0. Ein Profil neu auf allen 604 zu lernen bringt nichts
+  (kreuzvalidiert 52,2 %); die 53,1 % des bestehenden `edm` sind zum Teil
+  Selbstmessung, weil es auf der Hälfte dieser Stücke gelernt wurde.
 * **Eigene Dateien, 60 beschriftete Loops: 61,7 % exakt, 66,7 % Tonleiter,
   MIREX 68,0** — mit dem neuen Vorgabeprofil `mix` (2026-09-20). Vorher
   55,0/61,7/62,5 mit `edm`. **Das 75-%-Ziel ist weiter verfehlt**, aber der
@@ -261,7 +292,12 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
       Kunstsignal, um es zu erzeugen. Falls es je an echtem Material
       auffällt: Die Kandidaten der Looplänge müssten dann nach der Nähe zur
       110-BPM-Mitte ausgewählt werden statt nach der Nähe zur Messung.
-- [ ] Wo soll der volle GiantSteps-Satz liegen (nicht im Nextcloud-Ordner)?
+- [x] **Erledigt 2026-09-20: GiantSteps und GiantSteps MTG liegen auf D:**
+      (`D:/Datasets/giantsteps/audio`, 604 Stücke, 834 MB;
+      `D:/Datasets/giantsteps-mtg/audio`, 1 158 Stücke, 1,6 GB). Beide
+      per MD5 geprüft. Die Beschriftungen der MTG-Sammlung haben eine
+      Konfidenzspalte — nur Konfidenz 2 mit eindeutiger Tonart ist
+      brauchbar, das sind 1 159 von 1 486.
 - [ ] **Die eigenen Dateien bleiben unter 75 % (jetzt 61,7 % mit `mix`).**
       Profile sind damit weitgehend ausgereizt: vier gemessen, zwei
       gelernt (GiantSteps und 1263 Loops), eines gemischt. Nur die

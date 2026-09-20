@@ -429,6 +429,72 @@ Auflösungen nebeneinander ist dieser Hebel nicht zu haben.
 
 ---
 
+## Ein neuronales Netz -- was es bringt
+
+Gebaut, gemessen, und das Ergebnis ist zweischneidig. Das Netz ist **nicht**
+Teil des Plugins; die Werkzeuge liegen in `tools/`, damit die Messung
+wiederholbar bleibt.
+
+**Aufbau.** Eingabe ist nicht Rohaudio, sondern Keyys eigenes Chromagramm je
+Rahmen (`keyy-cli --frames`). Das Netz ist transpositions-aequivariant
+gebaut: Faltungen ueber die Tonhoehe sind zyklisch, der Kopf liefert je
+Grundton einen Wert fuer Dur und Moll. Dreht man die Eingabe um k Halbtoene,
+dreht sich die Ausgabe um genau k mit. Damit ist die Datenvermehrung durch
+Transposition exakt und kostenlos -- ein Chromagramm um einen Halbton zu
+verschieben heisst, es zu drehen -- und das Netz kann gar nicht lernen,
+einfach die haeufigste Tonart zu raten. 112 000 Parameter, Training auf der
+CPU in acht Minuten.
+
+**Daten.** Trainiert auf GiantSteps MTG Key (1 158 beschriftete Ausschnitte,
+Konfidenz 2), geprueft auf GiantSteps Key (604) und auf Material des
+Nutzers. Die Packs, aus denen `testdata/` stammt, sind vom Training
+ausgeschlossen.
+
+| Satz (n) | bestes Profil | Netz allein | Netz 0,4 + `mix` 0,6 |
+|---|---|---|---|
+| GiantSteps Key (604) | 51,8 % | 56,5 % | **56,0 %** |
+| Hip-Hop/Trap-Packs (93) | 57,0 % | 50,5 % | **61,3 %** |
+| Ghosthack-Loops (164, zurueckgehalten) | 47,6 % | 48,2 % | **50,6 %** |
+| eigene `testdata/` (60) | 60,0 % | 55,0 % | 60,0 % |
+
+(Profil-Werte hier mit `mix` und den Python-Merkmalen gerechnet, deshalb
+minimal anders als die C++-Zahlen weiter oben.)
+
+**Was man daraus lesen kann:**
+
+* **Allein taugt das Netz nur fuer das, worauf es trainiert wurde.** Nur auf
+  EDM trainiert, kam es auf GiantSteps auf 60,3 % -- und auf Hip-Hop auf
+  26,9 %, also weit unter jedes Profil. Erst gemischtes Trainingsmaterial
+  machte es ausgewogen, und zwar auf Kosten der EDM-Quote (56,5 %).
+* **Zusammen mit dem Profil ist es durchgehend etwas besser**, plus 2,5 bis
+  4,3 Punkte, ohne irgendwo zu verlieren. Netz und Profil irren sich
+  verschieden: Das Netz trifft auf Hip-Hop die Tonleiter zu 60 %, die genaue
+  Tonart aber nur zu 50 % -- es verwechselt Grundton und Tongeschlecht, wo
+  das Profil richtig liegt.
+* **Der Gewinn ist klein gemessen am Aufwand.** Im Plugin braeuchte es den
+  Vorwaertspfad von Hand in C++ plus rund 450 kB Gewichte. Das 75-%-Ziel
+  rueckt damit nicht in Reichweite.
+
+**Zwei Fallen, die beim Bauen Zeit gekostet haben** und beim naechsten Mal
+zuerst geprueft gehoeren:
+
+1. *Die Merkmale muessen dieselben sein wie im Kern.* Der erste Lauf ergab
+   38 % und sah plausibel aus. Die Gegenprobe -- reproduzieren die Profile
+   auf den Python-Merkmalen ihre bekannten Quoten? -- ergab 11 statt 53 %.
+   Ursache war eine fehlende Zeile: Der Kern zentriert den Stimmton
+   (`if (result >= 50) result -= 100`), die Nachbildung nicht. Damit war das
+   Chromagramm um einen Halbton verdreht.
+2. *Trainingsmaterial und Zielmaterial sind verschieden lang.* Die
+   GiantSteps-Ausschnitte haben 320 Rahmen, die Loops des Nutzers im Median
+   22. Mit festen Fenstern fiel das Netz auf kurzen Dateien auf 41,7 %; mit
+   gemischten Laengen (4 bis 320 Rahmen) stieg es auf 51,7 %.
+
+Und eine Zahl, die **nicht** gilt: Auf dem kuratierten Pack-Satz erreichte
+das gemischte Netz 83 % -- 996 dieser 1 259 Dateien waren im Training. Das
+ist Selbstmessung, kein Ergebnis.
+
+---
+
 ## Aufbau
 
 ```

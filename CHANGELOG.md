@@ -50,4 +50,8 @@ Erste Fassung, nur der Modus „Use File“.
 * Bei bestätigter Looplänge liegt der erste Taktanfang jetzt auf 0 statt aus
   der Einsatz-Hüllkurve gemessen zu werden; die Messung fand an Loops oft
   die Snare auf der Zwei.
+* Werkzeuge fuer einen neuronalen Klassifikator in `tools/` (`frames_io.py`,
+  `train_net.py`). Gemessen, aber **nicht** Teil des Plugins: allein
+  schlechter als die Profile auf Hip-Hop, im Verbund mit `mix` 2,5 bis 4,3
+  Punkte besser. Siehe README.
 * Catch2-Tests, GitHub-Actions-Workflow.
