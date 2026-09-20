@@ -72,6 +72,13 @@ public:
             2 → 54 %.
         */
         double tonalityWeighting = 1.0;
+
+        /** Den Beitrag jedes Rahmens einzeln aufheben, damit er nachträglich
+            gewichtet werden kann (Taktanfang, siehe KeyAnalyzer). Kostet
+            knapp 500 Byte je Rahmen, bei 2,7 Rahmen je Sekunde also etwa
+            80 kB je Minute. Ohne das ist die Summe dieselbe wie bisher.
+        */
+        bool recordFrames = false;
     };
 
     static constexpr int binsPerSemitone = 10;
@@ -96,6 +103,19 @@ public:
     /** Stimmton-korrigiert, 0 = C, Summe 1. */
     std::array<double, 12> getChroma() const;
 
+    /** Dasselbe, aber jeder aufgezeichnete Rahmen mit eigenem Gewicht.
+        Bei leerer oder unpassender Liste identisch mit getChroma().
+    */
+    std::array<double, 12> getChroma (const std::vector<double>& frameWeights) const;
+
+    /** Anzahl aufgezeichneter Rahmen (0, wenn recordFrames aus ist oder die
+        Obergrenze überschritten wurde).
+    */
+    int getNumRecordedFrames() const noexcept;
+
+    /** Mitte des aufgezeichneten Rahmens i in Sekunden seit Dateianfang. */
+    double getRecordedFrameCentre (int index) const noexcept;
+
     const std::array<double, fineBins>& getFineChroma() const noexcept { return fine; }
 
 private:
@@ -107,6 +127,14 @@ private:
         double weight;
     };
 
+    std::array<double, 12> fold (const std::array<double, fineBins>& histogram) const;
+
+    /** Deckel gegen unbegrenztes Wachsen im späteren Listen-Modus: bei
+        2,7 Rahmen je Sekunde reicht das für gut 50 Minuten. Darüber wird
+        die Aufzeichnung verworfen und ohne Taktgewichtung gerechnet.
+    */
+    static constexpr int maxRecordedFrames = 8192;
+
     Settings settings;
     double sampleRate = 11025.0;
     std::unique_ptr<Fft> fft;
@@ -116,6 +144,11 @@ private:
     std::array<double, fineBins> fine {};
     std::array<double, centBins> cents {};
     int numFrames = 0;
+
+    long long framesStarted = 0;          ///< auch stille Rahmen, für die Zeitachse
+    std::vector<float> recordedFine;      ///< fineBins Werte je Rahmen, hintereinander
+    std::vector<double> recordedCentres;
+    bool recordingOverflowed = false;
 };
 
 } // namespace keyy

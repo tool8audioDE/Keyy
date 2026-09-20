@@ -115,6 +115,7 @@ bool parse (int argc, char** argv, Options& options)
         else if (flag == "--exponent") options.settings.chroma.magnitudeExponent = std::stod (value);
         else if (flag == "--threshold") options.settings.chroma.peakThreshold = std::stod (value);
         else if (flag == "--tonality") options.settings.chroma.tonalityWeighting = std::stod (value);
+        else if (flag == "--bar-weight") options.settings.barWeighting = std::stod (value);
         else if (flag == "--min-hz")   options.settings.chroma.minHz = std::stod (value);
         else if (flag == "--max-hz")   options.settings.chroma.maxHz = std::stod (value);
         else if (flag == "--threads")  options.threads = std::stoi (value);
@@ -243,6 +244,11 @@ int runSingle (const Options& options)
     }
 
     std::cout << "Tempo:      " << tempoText (r) << "\n";
+
+    if (options.settings.barWeighting > 0.0)
+        std::cout << "Takt:       " << (r.barWeighted
+                        ? fixed (r.barSeconds, 3) + " s, erster Taktanfang bei " + fixed (r.barPhase, 3) + " s"
+                        : std::string ("keine Gewichtung -- kein Tempo erkannt")) << "\n";
 
     if (! options.reportPath.empty())
     {

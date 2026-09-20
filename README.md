@@ -389,6 +389,46 @@ meinen, erreichen 50 bis 77 %; Packs mit Kit-Beschriftung bleiben bei 9 bis
 
 ---
 
+## Warum der Taktanfang nicht hilft
+
+Naheliegend und deshalb gebaut: Loops sind auf ganze Takte geschnitten, und
+bei Loops steht der Grundton meist auf der Eins — also sollten Rahmen am
+Taktanfang stärker zählen. Der Schalter `--bar-weight <x>` tut genau das
+(0 = aus, 1 = die Eins zählt doppelt gegenüber der Taktmitte, weicher
+Übergang per Kosinus). Vorgabe ist 0, denn gemessen bringt es nichts:
+
+| `--bar-weight` | exakt | Tonleiter |
+|---|---|---|
+| 0 | 35,5 % | 46,1 % |
+| 1 | 35,7 % | 46,1 % |
+| 2 | 35,6 % | 45,9 % |
+| 4 | 35,2 % | 45,7 % |
+
+(1 269 kuratierte Dateien, davon 916 mit erkanntem Tempo — nur die können
+überhaupt gewichtet werden.)
+
+**Der Grund liegt im Analysefenster.** Es ist 16 384 Punkte lang, bei 11 kHz
+also 1,49 s:
+
+| Tempo | Takt | ein Rahmen überdeckt |
+|---|---|---|
+| 80 BPM | 3,00 s | 50 % |
+| 120 BPM | 2,00 s | 74 % |
+| 140 BPM | 1,71 s | 87 % |
+| 150 BPM | 1,60 s | 93 % |
+
+Bei Trap-Tempo überdeckt ein einzelner Rahmen fast den ganzen Takt. „Der
+Rahmen auf der Eins" ist deshalb kaum ein anderer als jeder andere: Bei
+Stärke 4 verschiebt sich das Chromagramm im Mittel um 2,1 %, und nur 11,9 %
+der Dateien ändern überhaupt ihre Tonart.
+
+Das Fenster ist nicht aus Versehen so lang — bei 50 Hz liegen Halbtöne nur
+3 Hz auseinander, und genau dort spielt die 808. **Taktschärfe und
+Bassauflösung verlangen entgegengesetzte Fensterlängen.** Ohne zwei
+Auflösungen nebeneinander ist dieser Hebel nicht zu haben.
+
+---
+
 ## Aufbau
 
 ```

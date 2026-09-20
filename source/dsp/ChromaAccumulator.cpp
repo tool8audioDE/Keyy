@@ -44,6 +44,11 @@ void ChromaAccumulator::reset()
     fine.fill (0.0);
     cents.fill (0.0);
     numFrames = 0;
+
+    framesStarted = 0;
+    recordedFine.clear();
+    recordedCentres.clear();
+    recordingOverflowed = false;
 }
 
 void ChromaAccumulator::process (const float* samples, int numSamples)
@@ -82,6 +87,11 @@ void ChromaAccumulator::analyseFrame (const float* samples)
 {
     const int n = fft->getSize();
     const int half = n / 2;
+
+    // Vor jedem vorzeitigen Ausstieg hochzaehlen: Die Zeitachse der
+    // aufgezeichneten Rahmen muss auch die stillen mitzaehlen, sonst
+    // verschiebt sich alles Spaetere gegen die Datei.
+    const long long frameIndex = framesStarted++;
 
     double energy = 0.0;
     for (int i = 0; i < n; ++i)
@@ -167,6 +177,8 @@ void ChromaAccumulator::analyseFrame (const float* samples)
             frameWeight = std::pow (std::min (1.0, total / spectrum), settings.tonalityWeighting);
     }
 
+    std::array<double, fineBins> contribution {};
+
     for (const auto& peak : peaks)
     {
         const double w = peak.weight / total * frameWeight;
@@ -175,8 +187,8 @@ void ChromaAccumulator::analyseFrame (const float* samples)
         const double x = wrap (peak.pitch * binsPerSemitone, static_cast<double> (fineBins));
         const int i0 = static_cast<int> (x);
         const double fx = x - i0;
-        fine[static_cast<size_t> (i0 % fineBins)]       += w * (1.0 - fx);
-        fine[static_cast<size_t> ((i0 + 1) % fineBins)] += w * fx;
+        contribution[static_cast<size_t> (i0 % fineBins)]       += w * (1.0 - fx);
+        contribution[static_cast<size_t> ((i0 + 1) % fineBins)] += w * fx;
 
         // Abweichung vom 440-Hz-Raster in Cent, 0..100 im Kreis.
         const double deviation = wrap (peak.pitch * 100.0, static_cast<double> (centBins));
@@ -184,6 +196,26 @@ void ChromaAccumulator::analyseFrame (const float* samples)
         const double fd = deviation - j0;
         cents[static_cast<size_t> (j0 % centBins)]       += w * (1.0 - fd);
         cents[static_cast<size_t> ((j0 + 1) % centBins)] += w * fd;
+    }
+
+    for (int i = 0; i < fineBins; ++i)
+        fine[static_cast<size_t> (i)] += contribution[static_cast<size_t> (i)];
+
+    if (settings.recordFrames && ! recordingOverflowed)
+    {
+        if (static_cast<int> (recordedCentres.size()) >= maxRecordedFrames)
+        {
+            recordingOverflowed = true;
+            recordedFine.clear();
+            recordedCentres.clear();
+        }
+        else
+        {
+            const double start = static_cast<double> (frameIndex * settings.hopSize) / sampleRate;
+            recordedCentres.push_back (start + 0.5 * fft->getSize() / sampleRate);
+            for (int i = 0; i < fineBins; ++i)
+                recordedFine.push_back (static_cast<float> (contribution[static_cast<size_t> (i)]));
+        }
     }
 
     ++numFrames;
@@ -225,6 +257,37 @@ double ChromaAccumulator::getTuningCents() const
 
 std::array<double, 12> ChromaAccumulator::getChroma() const
 {
+    return fold (fine);
+}
+
+int ChromaAccumulator::getNumRecordedFrames() const noexcept
+{
+    return static_cast<int> (recordedCentres.size());
+}
+
+double ChromaAccumulator::getRecordedFrameCentre (int index) const noexcept
+{
+    return recordedCentres[static_cast<size_t> (index)];
+}
+
+std::array<double, 12> ChromaAccumulator::getChroma (const std::vector<double>& frameWeights) const
+{
+    if (frameWeights.size() != recordedCentres.size() || frameWeights.empty())
+        return fold (fine);
+
+    std::array<double, fineBins> weighted {};
+    for (size_t f = 0; f < frameWeights.size(); ++f)
+    {
+        const float* row = recordedFine.data() + f * fineBins;
+        for (int i = 0; i < fineBins; ++i)
+            weighted[static_cast<size_t> (i)] += frameWeights[f] * row[i];
+    }
+
+    return fold (weighted);
+}
+
+std::array<double, 12> ChromaAccumulator::fold (const std::array<double, fineBins>& histogram) const
+{
     std::array<double, 12> chroma {};
     const double shift = getTuningCents() / 100.0;
 
@@ -237,7 +300,7 @@ std::array<double, 12> ChromaAccumulator::getChroma() const
         const double base = std::floor (position);
         const double fraction = position - base;
         const int semitone = static_cast<int> (base);
-        const double value = fine[static_cast<size_t> (i)];
+        const double value = histogram[static_cast<size_t> (i)];
 
         chroma[static_cast<size_t> (wrap (semitone, 12))]     += value * (1.0 - fraction);
         chroma[static_cast<size_t> (wrap (semitone + 1, 12))] += value * fraction;

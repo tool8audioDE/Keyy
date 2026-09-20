@@ -20,6 +20,16 @@ struct AnalysisSettings
     TempoEstimator::Settings tempo;
     bool detectTempo = true;
     double analysisRate = 11025.0;
+
+    /** Rahmen am Taktanfang stärker gewichten. 0 = aus (dann rechnet die
+        Analyse Bit für Bit wie vorher), 1 = der Rahmen auf der Eins zählt
+        doppelt gegenüber dem in der Taktmitte.
+
+        Der Gedanke: Loops aus Sample-Packs sind auf ganze Takte geschnitten,
+        und der Grundton steht meist auf der Eins. Braucht ein Tempo — ohne
+        das bleibt die Gewichtung aus.
+    */
+    double barWeighting = 0.0;
 };
 
 struct AnalysisResult
@@ -45,6 +55,13 @@ struct AnalysisResult
 
     double durationSeconds = 0.0;
     int    analysedFrames = 0;
+
+    /** Diagnose der Taktgewichtung: ob sie gegriffen hat und auf welchem
+        Raster. barPhase ist der erste Taktanfang in Sekunden.
+    */
+    bool   barWeighted = false;
+    double barSeconds = 0.0;
+    double barPhase = 0.0;
 };
 
 /** Die ganze Analyse einer Datei hinter einer Schnittstelle.

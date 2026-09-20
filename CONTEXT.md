@@ -157,6 +157,40 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
 
 ---
 
+11. **Den Taktanfang stärker gewichten** (2026-09-20, gebaut und gemessen,
+   Schalter `--bar-weight` bleibt drin, Vorgabe 0 = aus). Der Gedanke stand
+   als nächster Hebel in den offenen Punkten: Loops sind auf ganze Takte
+   geschnitten, der Grundton steht meist auf der Eins. **Ergebnis: wirkungslos.**
+   An 1 269 kuratierten Dateien (916 davon mit erkanntem Tempo): 35,5 % ohne,
+   35,7 % bei Stärke 1, 35,6 % bei 2, 35,2 % bei 4. Auf den eigenen Dateien
+   61,7 % ohne gegen 60,0 bis 61,7 % mit.
+
+   **Der Grund ist strukturell und nicht durch Nachstellen zu beheben:** Das
+   Analysefenster ist 16 384 Punkte lang, bei 11 kHz also 1,49 s. Ein Takt
+   dauert bei 120 BPM 2,0 s, bei 140 BPM 1,71 s, bei 150 BPM 1,60 s — **ein
+   einzelner Rahmen überdeckt 74 bis 93 % eines Takts.** „Der Rahmen auf der
+   Eins" unterscheidet sich damit kaum von jedem anderen. Gemessen: Bei
+   Stärke 4 (die Eins zählt fünffach gegenüber der Taktmitte) verschiebt
+   sich das Chromagramm im Mittel um 2,1 %, und nur 11,9 % der Dateien
+   ändern überhaupt ihre Tonart.
+
+   Das Fenster ist so lang, *weil* bei 50 Hz Halbtöne nur 3 Hz auseinander
+   liegen und genau dort die 808 spielt. Taktschärfe und Bassauflösung
+   verlangen entgegengesetzte Fensterlängen. Wer den Hebel wiederbeleben
+   will, muss zuerst dieses Problem lösen — etwa mit zwei Auflösungen
+   nebeneinander.
+
+   Zwei Nebenfunde, die dabei anfielen: **28 % der kuratierten Dateien
+   haben gar kein erkanntes Tempo**, können also nie gewichtet werden. Und
+   die Taktphase aus der Einsatz-Hüllkurve zu messen ist an Loops
+   schlechter als sie auf 0 zu setzen (58,3 gegen 61,7 %) — an einem
+   nachweislich vier Takte langen 120-BPM-Loop fand die Messung den ersten
+   Taktanfang bei 0,679 s. Sie sucht sich die lauteste Stelle, und das ist
+   oft die Snare auf der Zwei. Deshalb gilt bei bestätigter Looplänge
+   jetzt Phase 0.
+
+---
+
 ## Aktueller Stand (2026-09-12)
 
 * DSP-Kern, CLI, Tests (19 Fälle, grün), VST3 und Standalone bauen unter
@@ -231,8 +265,12 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
 - [ ] **Die eigenen Dateien bleiben unter 75 % (jetzt 61,7 % mit `mix`).**
       Profile sind damit weitgehend ausgereizt: vier gemessen, zwei
       gelernt (GiantSteps und 1263 Loops), eines gemischt. Nur die
-      Mischung brachte etwas (+6,7 Punkte). Der nächste Hebel muss das
-      Verfahren sein. Noch
+      Mischung brachte etwas (+6,7 Punkte). Der Taktanfang-Hebel ist
+      gebaut, gemessen und widerlegt (Ablehnung 11) — das Analysefenster
+      ist länger als ein Takt. **Damit sind die naheliegenden Wege alle
+      gegangen.** Was bleibt: zwei Fensterlängen nebeneinander (kurz für
+      den Takt, lang für den Bass), oder ein neuronales Netz hinter
+      `estimateKey`. Noch
       nicht geprüft und zu diesem Material passend: **den Taktanfang stärker
       gewichten.** Die Dateien sind erwiesenermaßen exakt auf ganze Takte
       geschnitten (55 von 61 über die Looplänge bestätigt), und bei Loops

@@ -42,4 +42,12 @@ Erste Fassung, nur der Modus „Use File“.
   Tonhöhenkorrektur sind beide dieselbe Tonleiter.
 * Das Plugin wertet auch Dateien aus, deren Dekoder vorzeitig aussteigt
   (MP3 aus FL Studio), und weist einen nennenswerten Verlust aus.
+* Schalter `--bar-weight` (Vorgabe 0 = aus): gewichtet Rahmen am Taktanfang
+  stärker. Gebaut, an 1 269 Dateien gemessen und für wirkungslos befunden —
+  das Analysefenster ist mit 1,49 s länger als ein Takt bei Trap-Tempo. Der
+  Schalter bleibt, damit die Messung wiederholbar ist, falls die Analyse
+  einmal eine zweite, kürzere Auflösung bekommt. Siehe README.
+* Bei bestätigter Looplänge liegt der erste Taktanfang jetzt auf 0 statt aus
+  der Einsatz-Hüllkurve gemessen zu werden; die Messung fand an Loops oft
+  die Snare auf der Zwei.
 * Catch2-Tests, GitHub-Actions-Workflow.
