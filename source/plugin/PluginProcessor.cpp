@@ -9,7 +9,7 @@ class KeyyAudioProcessor::AnalysisThread : public juce::Thread
 {
 public:
     AnalysisThread (KeyyAudioProcessor& ownerToUse, juce::File fileToAnalyse)
-        : juce::Thread ("Keyy-Analyse"), owner (ownerToUse), file (std::move (fileToAnalyse))
+        : juce::Thread ("Keyy Analysis"), owner (ownerToUse), file (std::move (fileToAnalyse))
     {
     }
 
@@ -74,7 +74,7 @@ void KeyyAudioProcessor::analyseFile (const juce::File& file)
 
     {
         const juce::ScopedLock sl (lock);
-        statusMessage = juce::String::fromUTF8 ("Analysiere ") + file.getFileName() + juce::String::fromUTF8 (" …");
+        statusMessage = juce::String::fromUTF8 ("Analysing ") + file.getFileName() + juce::String::fromUTF8 ("…");
     }
 
     progress = 0.0f;
@@ -109,7 +109,7 @@ void KeyyAudioProcessor::runAnalysis (const juce::File& file, juce::Thread& thre
 
     if (reader == nullptr || reader->lengthInSamples <= 0 || reader->sampleRate <= 0.0)
     {
-        fail (juce::String::fromUTF8 ("Datei nicht lesbar: ") + file.getFileName());
+        fail (juce::String::fromUTF8 ("Cannot read file: ") + file.getFileName());
         return;
     }
 
@@ -151,7 +151,7 @@ void KeyyAudioProcessor::runAnalysis (const juce::File& file, juce::Thread& thre
 
     if (analysedSamples == 0)
     {
-        fail (juce::String::fromUTF8 ("Datei nicht dekodierbar: ") + file.getFileName());
+        fail (juce::String::fromUTF8 ("Cannot decode file: ") + file.getFileName());
         return;
     }
 
@@ -159,7 +159,7 @@ void KeyyAudioProcessor::runAnalysis (const juce::File& file, juce::Thread& thre
 
     if (! analysis.valid)
     {
-        fail (juce::String::fromUTF8 ("Keine tonalen Anteile gefunden in ") + file.getFileName());
+        fail (juce::String::fromUTF8 ("No tonal content found in ") + file.getFileName());
         return;
     }
 
@@ -187,9 +187,9 @@ void KeyyAudioProcessor::runAnalysis (const juce::File& file, juce::Thread& thre
         // bei jeder Datei wäre nur Rauschen.
         const juce::int64 missing = length - analysedSamples;
         statusMessage = missing > juce::jmax<juce::int64> (static_cast<juce::int64> (reader->sampleRate), length / 50)
-            ? juce::String::fromUTF8 ("Nur ") + juce::String (analysedSamples / reader->sampleRate, 1)
-                  + juce::String::fromUTF8 (" s von ") + juce::String (length / reader->sampleRate, 1)
-                  + juce::String::fromUTF8 (" s lesbar — Ergebnis aus diesem Teil")
+            ? juce::String::fromUTF8 ("Only ") + juce::String (analysedSamples / reader->sampleRate, 1)
+                  + juce::String::fromUTF8 (" s of ") + juce::String (length / reader->sampleRate, 1)
+                  + juce::String::fromUTF8 (" s readable — result from that part")
             : juce::String();
     }
 

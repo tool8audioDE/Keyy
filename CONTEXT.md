@@ -36,7 +36,7 @@ Offline-CLI, CI unter Linux und Windows, Doku auf Deutsch.
 | Entscheidung | Grund |
 |---|---|
 | Nur Eigennutzung | wie Voxx |
-| Name **Keyy**, Hersteller Off-Music (`Ofmu`), Plugin-Code `Keyy` | analog zu Voxx |
+| Name **Keyy**, Hersteller tooL8 (`TooL`), Plugin-Code `Keyy` | Hersteller 2026-09-24 von Off-Music umbenannt |
 | Ergebnis v1: Tonart + Paralleltonart, Stimmton, BPM | Konfidenz/Zweitkandidat bewusst **nicht** in der Oberfläche (das CLI zeigt ihn zur Diagnose) |
 | Ergebnis wird **nur angezeigt** | Übergabe an PitchSnap/Voxx („Send to Auto-Tune“), Zwischenablage, Umbenennen: später |
 | Englische Notation: `F Minor`, `Bb`, `F#` | wie Auto-Key, FL Studio und Dateinamen von Sample-Packs |
@@ -319,7 +319,7 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
 - [ ] Plugin in FL Studio testen: Ziehen aus dem FL-Browser, Speichern im
       Projekt.
 - [ ] Später: Listen-Modus, Manual-Modus, Klaviatur mit Skalentönen,
-      Übergabe an PitchSnap/Voxx, eigene Oberfläche im Off-Music-Design
+      Übergabe an PitchSnap/Voxx, eigene Oberfläche im tooL8-Design
       (dunkel `#121212`, Akzent `#3B8ED0`).
 
 ---

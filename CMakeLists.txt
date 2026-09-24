@@ -124,8 +124,8 @@ if(KEYY_BUILD_PLUGIN)
 
     # AU fehlt bewusst, wie bei Voxx: nur macOS, nie gebaut, nie geprueft.
     juce_add_plugin(Keyy
-        COMPANY_NAME              "Off-Music"
-        PLUGIN_MANUFACTURER_CODE  Ofmu
+        COMPANY_NAME              "tooL8"
+        PLUGIN_MANUFACTURER_CODE  TooL
         PLUGIN_CODE               Keyy
         FORMATS                   VST3 Standalone
         PRODUCT_NAME              "Keyy"

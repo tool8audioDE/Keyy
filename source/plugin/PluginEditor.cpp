@@ -8,7 +8,8 @@ namespace keyy
 namespace
 {
     /** juce::String nimmt einen const char* als ASCII an und beanstandet
-        Umlaute. Die Quelltexte sind UTF-8, also ausdrücklich so lesen.
+        alles darüber. Die Oberfläche ist englisch, benutzt aber Zeichen
+        jenseits von ASCII (⇅, —, …) — also ausdrücklich als UTF-8 lesen.
     */
     juce::String ui (const char* text)
     {
@@ -26,10 +27,10 @@ namespace
 KeyyAudioProcessorEditor::KeyyAudioProcessorEditor (KeyyAudioProcessor& processorToUse)
     : AudioProcessorEditor (processorToUse), owner (processorToUse)
 {
-    loadButton.setButtonText (ui ("Datei laden …"));
+    loadButton.setButtonText (ui ("Load File…"));
     loadButton.onClick = [this] { openFileChooser(); };
 
-    swapButton.setButtonText (ui ("Paralleltonart ⇅"));
+    swapButton.setButtonText (ui ("Relative Key ⇅"));
     swapButton.onClick = [this]
     {
         owner.setShowRelative (! owner.getShowRelative());
@@ -61,7 +62,7 @@ KeyyAudioProcessorEditor::KeyyAudioProcessorEditor (KeyyAudioProcessor& processo
 
     statusLabel.setJustificationType (juce::Justification::centred);
     hintLabel.setJustificationType (juce::Justification::centred);
-    hintLabel.setText (ui ("Audiodatei hierher ziehen — WAV, AIFF, FLAC, MP3, Ogg"), juce::dontSendNotification);
+    hintLabel.setText (ui ("Drop an audio file here — WAV, AIFF, FLAC, MP3, Ogg"), juce::dontSendNotification);
     hintLabel.setColour (juce::Label::textColourId, juce::Colours::grey);
 
     for (auto* component : std::initializer_list<juce::Component*> {
@@ -144,7 +145,7 @@ void KeyyAudioProcessorEditor::refresh()
 
     const auto r = owner.getResult();
 
-    fileLabel.setText (r.valid ? r.fileName : ui ("Keine Datei geladen"), juce::dontSendNotification);
+    fileLabel.setText (r.valid ? r.fileName : ui ("No file loaded"), juce::dontSendNotification);
 
     swapButton.setEnabled (r.valid);
     halfButton.setEnabled (r.valid && r.tempoValid);
@@ -167,10 +168,10 @@ void KeyyAudioProcessorEditor::refresh()
 
     // Beide Tonarten bestehen aus denselben sieben Tönen. Für Auto-Tune ist
     // die Wahl deshalb gleichgültig — und genau dafür wird Keyy benutzt.
-    relativeLabel.setText (ui ("= ") + other.name() + ui ("  (gleiche Tonleiter)"), juce::dontSendNotification);
+    relativeLabel.setText (ui ("= ") + other.name() + ui ("  (same scale)"), juce::dontSendNotification);
 
     tuningLabel.setText ("A = " + juce::String (r.referenceHz, 1) + " Hz   ("
-                             + (r.tuningCents >= 0.0 ? "+" : "") + juce::String (r.tuningCents, 1) + " Cent)",
+                             + (r.tuningCents >= 0.0 ? "+" : "") + juce::String (r.tuningCents, 1) + " cents)",
                          juce::dontSendNotification);
 
     if (r.tempoValid)
@@ -180,21 +181,21 @@ void KeyyAudioProcessorEditor::refresh()
 
         juce::String text = formatBpm (bpm);
         if (octave == 0 && r.bpmFromLoopLength)
-            text += ui ("   (aus Looplänge)");
+            text += ui ("   (from loop length)");
         else if (octave != 0)
-            text += ui ("   (erkannt: ") + formatBpm (r.bpm) + ")";
+            text += ui ("   (detected: ") + formatBpm (r.bpm) + ")";
 
         tempoLabel.setText (text, juce::dontSendNotification);
     }
     else
     {
-        tempoLabel.setText (ui ("Tempo nicht erkannt"), juce::dontSendNotification);
+        tempoLabel.setText (ui ("No tempo detected"), juce::dontSendNotification);
     }
 }
 
 void KeyyAudioProcessorEditor::openFileChooser()
 {
-    chooser = std::make_unique<juce::FileChooser> (ui ("Audiodatei wählen"), juce::File(), owner.getFormatWildcard());
+    chooser = std::make_unique<juce::FileChooser> (ui ("Choose Audio File"), juce::File(), owner.getFormatWildcard());
 
     chooser->launchAsync (juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles,
                           [this] (const juce::FileChooser& fc)
