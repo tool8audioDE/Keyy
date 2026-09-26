@@ -321,6 +321,19 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
 - [ ] Später: Listen-Modus, Manual-Modus, Klaviatur mit Skalentönen,
       Übergabe an PitchSnap/Voxx, eigene Oberfläche im tooL8-Design
       (dunkel `#121212`, Akzent `#3B8ED0`).
+- [x] **Erledigt 2026-09-26: Laufzeit statisch.** Keyy.exe und Keyy.vst3
+      hingen an MSVCP140/VCRUNTIME140 (13 Laufzeit-DLLs) und starteten auf
+      Rechnern ohne Visual-C++-Paket nicht. Jetzt 0, alle Tests grün.
+      Eine vorher verteilte 1.0.0 ist davon betroffen — auf der Website
+      gegen das neue Paket tauschen.
+- [x] **Erledigt 2026-09-26: Download-Paket** per `tools/package.ps1`
+      (`dist/Keyy-1.0.0-win64.zip` mit VST3, Standalone, englischer
+      Anleitung `packaging/README.txt`, Lizenz, SHA256). Aus dem ZIP
+      entpackt startet die App. **VirusTotal: 0 Treffer.**
+- [x] **Erledigt 2026-09-26: Repo öffentlich** (war privat, obwohl das
+      README den öffentlichen Quellcode als Grund für die AGPLv3 nennt).
+- [ ] Die Oberfläche kann `Tool8LookAndFeel` aus `../VocalEQQ` übernehmen
+      — dort ist die tooL8-Palette umgesetzt.
 
 ---
 
