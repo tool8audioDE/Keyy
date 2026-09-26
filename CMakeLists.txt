@@ -15,6 +15,12 @@ if(MSVC)
     add_compile_options(/utf-8)
 endif()
 
+# Laufzeitbibliothek statisch einbinden. Sonst brauchen Plugin und App die
+# Visual-C++-Laufzeit (MSVCP140.dll, VCRUNTIME140.dll) - auf Rechnern ohne
+# dieses Microsoft-Paket startet dann weder die App noch laedt die DAW das
+# Plugin. Steht vor allen Zielen, damit JUCE und Catch2 dieselbe benutzen.
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 # Wie bei Voxx: Das Plugin braucht JUCE (grosser Download beim ersten
 # Konfigurieren), DSP-Kern, Tests und Offline-Werkzeug kommen ohne aus.
 option(KEYY_BUILD_PLUGIN "VST3- und Standalone-Ziele bauen (benoetigt JUCE)" ON)
