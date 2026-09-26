@@ -3,3 +3,4 @@ build-*/
 testdata/
 __pycache__/
 *.pyc
+dist/
