@@ -335,8 +335,8 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
 - [x] **Erledigt 2026-09-26: Laufzeit statisch.** Keyy.exe und Keyy.vst3
       hingen an MSVCP140/VCRUNTIME140 (13 Laufzeit-DLLs) und starteten auf
       Rechnern ohne Visual-C++-Paket nicht. Jetzt 0, alle Tests grün.
-      Eine vorher verteilte 1.0.0 ist davon betroffen — auf der Website
-      gegen das neue Paket tauschen.
+      Der Tag `v1.0.0` zeigt noch auf den Stand davor, deshalb als
+      **1.0.1** veröffentlicht; die 1.0.0 auf der Website dagegen tauschen.
 - [x] **Erledigt 2026-09-26: Download-Paket** per `tools/package.ps1`
       (`dist/Keyy-1.0.0-win64.zip` mit VST3, Standalone, englischer
       Anleitung `packaging/README.txt`, Lizenz, SHA256). Aus dem ZIP

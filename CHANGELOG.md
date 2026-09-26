@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1 — 2026-09-26
+
+* Visual-C++-Laufzeit statisch eingebunden. Plugin und App laufen jetzt
+  auch auf Rechnern ohne installiertes Visual C++ Redistributable
+  (vorher fehlten dort MSVCP140.dll / VCRUNTIME140.dll).
+
 ## 1.0.0 — 2026-09-26
 
 Erstes öffentliches Release, kostenlos unter AGPLv3 (https://tool8.online/keyy).
