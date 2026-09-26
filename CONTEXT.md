@@ -1,6 +1,6 @@
 # Projekt-Kontext: Keyy
 
-_Zuletzt aktualisiert: 2026-09-12_
+_Zuletzt aktualisiert: 2026-09-26_ (Release-Paket, statische Laufzeit, Repo öffentlich — siehe Offene Punkte)
 
 Diese Datei ist für den Einstieg in eine neue Sitzung gedacht. Sie wiederholt
 **nicht**, was im `README.md` steht — dort stehen Verfahren, Bauanleitung und
