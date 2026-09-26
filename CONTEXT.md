@@ -1,6 +1,8 @@
 # Projekt-Kontext: Keyy
 
-_Zuletzt aktualisiert: 2026-09-26_ (Release-Paket, statische Laufzeit, Repo öffentlich — siehe Offene Punkte)
+_Zuletzt aktualisiert: 2026-09-26_ (Release-Paket, statische Laufzeit, Repo
+öffentlich; nachgetragen: englische Oberfläche, Hersteller tooL8 und was das
+für FL bedeutet)
 
 Diese Datei ist für den Einstieg in eine neue Sitzung gedacht. Sie wiederholt
 **nicht**, was im `README.md` steht — dort stehen Verfahren, Bauanleitung und
@@ -316,8 +318,17 @@ Hip-Hop). Nicht im Fokus: Acapellas, komplette Songs mit Tonartwechsel.
       eines Construction Kits, deren Tonleiter im Signal gar nicht steht
       (siehe README). Ein Verfahren kann diese neun nicht gewinnen — ohne
       sie liegt Keyy bei 60,8 % exakt und 68,6 % Tonleiter.
+- [ ] **Das installierte Plugin ist nicht der aktuelle Build.** Unter
+      `C:/Program Files/Common Files/VST3/tooL8/Keyy.vst3` liegt noch die
+      Fassung vom 2026-09-24 (per SHA256 geprüft), also **ohne** die
+      statische Laufzeit vom 2026-09-26 — gerade die sorgt dafür, dass es
+      ohne Visual-C++-Paket läuft. Neu kopieren und in FL suchen lassen.
 - [ ] Plugin in FL Studio testen: Ziehen aus dem FL-Browser, Speichern im
-      Projekt.
+      Projekt. **Teilweise erledigt 2026-09-24:** Laden per Dialog,
+      Anzeige, Tausch der Paralleltonart und `/2`/`x2` sind im Standalone
+      geprüft, und FL führt das Plugin seit dem Pfadwechsel korrekt als
+      `tooL8`. Ungeprüft bleiben das Ziehen aus dem FL-Browser und ob das
+      Ergebnis ein Speichern/Laden des FL-Projekts übersteht.
 - [ ] Später: Listen-Modus, Manual-Modus, Klaviatur mit Skalentönen,
       Übergabe an PitchSnap/Voxx, eigene Oberfläche im tooL8-Design
       (dunkel `#121212`, Akzent `#3B8ED0`).
@@ -353,6 +364,40 @@ cmake --build build --config Release
 Die beiden `FETCHCONTENT_SOURCE_DIR_*`-Angaben sparen den JUCE- und
 Catch2-Download, weil Voxx sie schon heruntergeladen hat. `KEYY_COPY_PLUGIN`
 muss aus bleiben, solange nicht mit Adminrechten gebaut wird.
+
+### FL Studio: Plugin-Kennung und Datenbank (gelernt 2026-09-24)
+
+**Der Herstellercode steckt in der VST3-Kennung.** Beim Umbenennen von
+Off-Music (`Ofmu`) auf tooL8 (`TooL`) wurde aus der CID `…4F666D754B657979`
+die CID `…546F6F4C4B657979` — darin stehen `TooL` und `Keyy` im Klartext.
+Folge: **Für FL ist das ein anderes Plugin.** Projekte, in denen das alte
+Keyy steckte, finden es nicht mehr wieder und brauchen es neu eingesetzt.
+
+**FL liest ein bekanntes Plugin nicht neu ein.** „Find installed plugins"
+überspringt alles, was am selben Pfad schon in der Datenbank steht — auch
+wenn die Datei sich geändert hat. Deshalb zeigte FL nach dem Umbenennen
+weiter „Off-Music". Die Einträge liegen als `.fst` unter
+`%USERPROFILE%/Documents/Image-Line/FL Studio/Presets/Plugin database/`
+(je einmal in `Effects/` und `Installed/Effects/VST3/`) und enthalten im
+Klartext Herstellercode, Plugin-Code, Pfad und Herstellername. Sie zu
+löschen reicht **nicht**: FL schreibt die ganze Datenbank beim Start aus
+seinem eigenen Zwischenspeicher neu.
+
+**Was funktioniert hat: den Pfad ändern.** Das Plugin liegt jetzt unter
+`C:/Program Files/Common Files/VST3/tooL8/Keyy.vst3` statt direkt im
+VST3-Ordner. Ein Hersteller-Unterordner ist ohnehin die übliche
+VST3-Ablage, und für FL ist ein neuer Pfad zwangsläufig ein neues Plugin.
+Danach genügte ein normaler Suchlauf; der Eintrag nennt seitdem korrekt
+`TooLKeyy` und `tooL8`.
+
+**Was nicht funktioniert hat:** die Option „Rescan previously verified
+plugins" im Plugin-Manager. Die erzwingt zwar das Neueinlesen, instanziiert
+aber alle 323 Plugins einzeln — nach 13 Minuten ohne Fortschrittsanzeige
+abgebrochen. Für ein einzelnes Plugin der falsche Hebel.
+
+**Nicht anfassen:** `Voxx.fst` und `PitchSnap.fst` enthalten ebenfalls
+`Ofmu`/`Off-Music`. Das ist korrekt — die beiden sind tatsächlich
+Off-Music-Plugins.
 
 ### Messungen wiederholen
 

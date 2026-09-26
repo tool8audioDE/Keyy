@@ -58,4 +58,10 @@ Erste Fassung, nur der Modus „Use File“.
   `train_net.py`). Gemessen, aber **nicht** Teil des Plugins: allein
   schlechter als die Profile auf Hip-Hop, im Verbund mit `mix` 2,5 bis 4,3
   Punkte besser. Siehe README.
+* Oberfläche durchgängig auf Englisch: Knöpfe, Ergebnisanzeige, Hinweise und
+  Fehlermeldungen. Kommentare und Doku bleiben deutsch.
+* Hersteller **tooL8** (Code `TooL`) statt Off-Music (`Ofmu`). Das ändert die
+  eindeutige VST3-Kennung — FL Studio muss neu suchen, und Projekte mit dem
+  alten Keyy finden es nicht wieder. Siehe CONTEXT, „FL Studio: Plugin-Kennung
+  und Datenbank".
 * Catch2-Tests, GitHub-Actions-Workflow.
