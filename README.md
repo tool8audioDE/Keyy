@@ -514,9 +514,13 @@ Key/
 └── tests/                  Catch2-Tests mit synthetischen Signalen
 ```
 
-## Lizenzhinweis
+## Lizenz
 
-JUCE ist kostenlos nur unter AGPLv3 oder mit persönlicher Lizenz nutzbar.
-Keyy ist ein Werkzeug für die eigenen Produktionen; eine binäre Weitergabe
-ohne kommerzielle JUCE-Lizenz verpflichtet zur Offenlegung des Quellcodes.
-minimp3 ist gemeinfrei (CC0).
+Keyy ist freie Software unter der **GNU Affero General Public License v3**
+(siehe `LICENSE`). Grund: Keyy nutzt JUCE 8 unter dessen AGPLv3-Lizenz und wird
+als Binary öffentlich weitergegeben (https://tool8.online/keyy); der Quellcode
+liegt öffentlich unter https://github.com/tool8audioDE/Keyy.
+
+Fremdcode: JUCE (AGPLv3), minimp3 (CC0, nur CLI), Catch2 (BSL-1.0, nur Tests).
+
+*Keyy is free software licensed under the GNU AGPLv3. Download: https://tool8.online/keyy*
